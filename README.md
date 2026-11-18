@@ -164,6 +164,17 @@ cd backend
 python -m app.services.extraction ../sample_data/resumes/03_candidate_a_two_column.pdf
 ```
 
+## Section detection
+
+Resume text is split into contact, summary, experience, skills, projects, education and certifications. A line is a section header when it has 5 words or fewer, no sentence punctuation or digits, starts with a capital letter, and fuzzy-matches (rapidfuzz) one of ~90 known headers: `Tech Stack`, `Career History`, `About Me`, `ACADEMIC QUALIFICATIONS:` and so on. Typos still match ("Work Experiance"). A line in ALL CAPS or ending in a colon needs a fuzzy score of 85; any other line needs 90. Text before the first header is the contact block. Recognised but unused sections (Hobbies, Languages, References) are kept as `other`, so their text doesn't leak into the section above them.
+
+To see how a resume is split:
+
+```bash
+cd backend
+python -m app.services.parsing ../sample_data/resumes/02_java_aliases.docx
+```
+
 ## How matching works
 
 ```
