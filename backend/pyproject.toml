@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "resume-matcher-backend"
+version = "0.1.0"
+description = "FastAPI backend for the AI Resume Matching & Ranking System"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+# Exact pins: each build step adds only the packages it needs.
+dependencies = [
+    "fastapi==0.163.2",
+    "uvicorn[standard]==0.54.0",
+    "pydantic==2.14.3",
+    "pydantic-settings==2.16.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.2.0",
+    "httpx2==2.16.2",  # used by FastAPI's TestClient (Starlette 1.x)
+    "ruff==0.17.5",
+    "mypy==2.4.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+# --- ruff: lint + format ---------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # bugbear
+    "UP",       # pyupgrade
+    "N",        # pep8-naming
+    "SIM",      # simplify
+    "RUF",      # ruff-specific
+]
+ignore = [
+    "B008",     # FastAPI's Depends()/Query() in argument defaults is idiomatic
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# --- mypy ------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["alembic/"]
+
+# --- pytest ----------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"

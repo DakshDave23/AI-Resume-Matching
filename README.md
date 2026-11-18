@@ -70,7 +70,23 @@ docker compose up --build
 
 ## Local development
 
-_TODO._
+**Backend** (Python 3.12):
+
+```bash
+cd backend
+py -3.12 -m venv .venv                 # macOS/Linux: python3.12 -m venv .venv
+.venv\Scripts\activate                 # macOS/Linux: source .venv/bin/activate
+pip install -e ".[dev]"
+uvicorn app.main:app --reload          # http://localhost:8000/docs
+```
+
+Health check: `GET http://localhost:8000/api/v1/health`
+
+Lint, type-check and test:
+
+```bash
+ruff check . && ruff format --check . && mypy app tests && pytest
+```
 
 ## How matching works
 
