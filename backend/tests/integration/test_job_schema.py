@@ -8,28 +8,12 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import EMBEDDING_DIM, Job, JobRequirement, JobSkill, Skill
-from app.models.enums import JobStatus, RequirementCategory, RequirementType, SkillAddedBy
+from app.models import Job, JobRequirement, JobSkill, Skill
+from app.models.enums import JobStatus, RequirementType, SkillAddedBy
 from app.services.matching.scoring_config import DEFAULT_WEIGHTS
+from tests.integration.factories import VECTOR, make_job, make_requirement
 
 pytestmark = pytest.mark.integration
-
-VECTOR = [0.0] * (EMBEDDING_DIM - 1) + [1.0]
-
-
-def make_job(**overrides: Any) -> Job:
-    fields: dict[str, Any] = {"title": "Backend Java Developer", "raw_text": "We need Java."}
-    return Job(**(fields | overrides))
-
-
-def make_requirement(position: int = 0) -> JobRequirement:
-    return JobRequirement(
-        text="Design and build scalable backend services",
-        category=RequirementCategory.RESPONSIBILITY,
-        requirement_type=RequirementType.REQUIRED,
-        position=position,
-        embedding=VECTOR,
-    )
 
 
 def test_job_defaults_come_from_the_database(db_session: Session) -> None:

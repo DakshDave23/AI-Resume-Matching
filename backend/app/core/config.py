@@ -39,7 +39,8 @@ class Settings(BaseSettings):
 
     # --- Uploads ---------------------------------------------------------
     upload_dir: Path = Path("./storage/uploads")
-    max_file_size_mb: int = Field(default=5, gt=0, le=50)
+    # Capped at 5: resumes.file_size_bytes has a matching CHECK in the database.
+    max_file_size_mb: int = Field(default=5, gt=0, le=5)
     max_batch_files: int = Field(default=50, gt=0, le=200)
 
     # --- Parsing / NLP ---------------------------------------------------
