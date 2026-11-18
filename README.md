@@ -191,7 +191,20 @@ Skills are mapped to the taxonomy's canonical names, with the section and line e
 
 Group labels ("Frontend:"), contact links (`github.com/...` is not GitHub) and degree names ("Electronics and Communication" is not the soft skill) are not skill claims. On the 14 text samples the extractor finds all 200 expected skills with no false positives.
 
-To see what the parser gets from a resume (contact details, skills, then sections):
+## Work history
+
+Each date range in the Experience section anchors one role. Supported formats include `Jan 2020 – Present`, `January 2020 - Mar 2022`, `2019 – 2021`, `03/2018 – 06/2020`, `2018-03 – 2020-06`, `Jan '20 – Mar '22`, `Since 2021`, and the end words Present, Current, Now, Till date, To date and Ongoing. A start year alone means January, an end year alone means December, and months count inclusively.
+
+Title and company come from the role's header: the date line itself (`Engineer | Acme, Pune | Jan 2020 – Present`), up to two lines above it, or the lines below it when a table template puts the date first. The piece containing a job-title word is the title, so `Acme | Senior Engineer` works too. A city after the company (`Acme Fintech, Bengaluru`) becomes the role's location.
+
+- **Total experience** merges overlapping date ranges, so two jobs held at once count once (persona 9: 137 months of roles, 113 months of experience). Gaps are not penalised.
+- **Internships** (intern, trainee, apprentice) are listed but left out of the total.
+- **No dates at all:** roles are still read from their title and company lines, and the total comes from a statement such as "7 years of experience" in the summary.
+- **Years per skill:** the merged dates of the roles whose title or bullets mention the skill, so a skill never exceeds the total.
+
+Dates use a small built-in grammar rather than dateparser, which fills missing parts from today ("2019" would become 2019-*this month*).
+
+To see what the parser gets from a resume (contact details, work history, skills, then sections):
 
 ```bash
 cd backend

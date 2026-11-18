@@ -22,6 +22,8 @@ from dataclasses import dataclass
 
 import phonenumbers
 
+from app.services.parsing.vocabulary import JOB_TITLE_WORDS
+
 CONTACT_LINES_SCANNED = 8  # the name sits at the top; don't wander into a headline paragraph
 
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
@@ -43,18 +45,11 @@ LINE_SEPARATORS = re.compile(r"\s*[|•·\t]\s*|\s+[—–-]\s+")
 POSTAL_CODE = re.compile(r"\s+\d{5,6}(?:-\d{4})?$")
 
 # Words that make a capitalised phrase a headline or title, not a person's name.
-NOT_NAME_WORDS = frozenset(
+NOT_NAME_WORDS = JOB_TITLE_WORDS | frozenset(
     {
-        # job titles
-        "developer", "engineer", "manager", "analyst", "scientist", "consultant",
-        "accountant", "designer", "architect", "intern", "trainee", "lead", "specialist",
-        "officer", "administrator", "tester", "programmer", "director", "executive",
-        "associate", "assistant", "coordinator", "representative", "technician", "student",
-        "graduate", "fresher", "professional", "expert", "head", "president", "founder",
-        "freelancer", "owner",
         # headline words
         "software", "data", "web", "cloud", "backend", "frontend", "fullstack", "stack",
-        "devops", "technical", "senior", "junior",
+        "devops", "technical", "senior", "junior", "professional",
         # document labels
         "resume", "curriculum", "vitae", "cv", "profile", "contact", "summary", "objective",
     }
