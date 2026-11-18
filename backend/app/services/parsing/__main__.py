@@ -13,12 +13,8 @@ from pathlib import Path
 from app.core.config import get_settings
 from app.models.enums import RequirementType
 from app.services.extraction import JD_KINDS, ExtractionError, extract_text, validate_file
-from app.services.parsing.contact import extract_contact
-from app.services.parsing.education import parse_education
-from app.services.parsing.experience import parse_experience, skill_months
 from app.services.parsing.jd_parser import parse_job
-from app.services.parsing.sections import CONTACT, segment
-from app.services.parsing.skills import get_skill_extractor
+from app.services.parsing.resume_parser import parse_resume
 
 
 def main(argv: list[str]) -> int:
@@ -77,18 +73,16 @@ def show_job(name: str, text: str) -> None:
 
 
 def show_resume(name: str, text: str) -> None:
-    segmentation = segment(text)
-    contact = extract_contact(
-        segmentation.text_of(CONTACT), text, region=get_settings().phone_default_region
-    )
-    print(f"--- {name} ---")
-    for field, value in asdict(contact).items():
-        print(f"{field:>13}: {value if value is not None else '-'}")
-
     today = date.today()
-    work = parse_experience(
-        segmentation.text_of("experience"), today=today, summary=segmentation.text_of("summary")
-    )
+    parsed = parse_resume(text, today=today, region=get_settings().phone_default_region)
+    print(f"--- {name} ---")
+    for field, value in asdict(parsed.contact).items():
+        print(f"{field:>13}: {value if value is not None else '-'}")
+    failed = [check for check, ok in parsed.checks.items() if not ok]
+    review = "  [needs review]" if parsed.needs_review else ""
+    print(f"   confidence: {parsed.confidence:.2f}{review}  missing: {', '.join(failed) or '-'}")
+
+    work = parsed.work
     total = f"{work.total_months} months" if work.total_months is not None else "unknown"
     print(f"\n--- experience: {total} (from {work.source or '-'}), now: {work.current_title} ---")
     for role in work.roles:
@@ -98,14 +92,12 @@ def show_resume(name: str, text: str) -> None:
         length = f" ({months} mo)" if months is not None else ""
         print(f"{role.title} | {role.company} | {role.location or '-'} | {when}{length}{intern}")
 
-    education = parse_education(segmentation.text_of("education"))
-    level = education.highest_level
+    level = parsed.education.highest_level
     print(f"\n--- education: highest {level.name.lower() if level is not None else '-'} ---")
-    for entry in education.entries:
+    for entry in parsed.education.entries:
         print(f"{entry.degree} | {entry.field or '-'} | {entry.institution or '-'} | {entry.year}")
 
-    skills = get_skill_extractor().extract_resume(segmentation)
-    used = skill_months(work, get_skill_extractor(), today=today)
+    skills, used = parsed.skills, parsed.skill_months
     print(f"\n--- {len(skills.skills)} skills ---")
     for skill in skills.skills:
         sources = ", ".join(s.value for s in skill.sources)
@@ -114,8 +106,8 @@ def show_resume(name: str, text: str) -> None:
     if skills.unmapped:
         print(f"unmapped: {', '.join(skills.unmapped)}")
 
-    print(f"\n--- sections: {', '.join(segmentation.names())} ---")
-    for section in segmentation.sections:
+    print(f"\n--- sections: {', '.join(parsed.sections.names())} ---")
+    for section in parsed.sections.sections:
         header = f' (header: "{section.header}")' if section.header else ""
         print(f"\n[{section.name}]{header}")
         print(section.text)

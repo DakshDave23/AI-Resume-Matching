@@ -93,6 +93,7 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 | `make migrate` | `cd backend && alembic upgrade head` |
 | `make seed` | `backend/.venv/Scripts/python scripts/seed_skills.py` |
 | `make samples` | `backend/.venv/Scripts/python scripts/generate_samples.py` |
+| `make eval-parsing` | `backend/.venv/Scripts/python scripts/evaluate_parsing.py --out docs/parsing-accuracy.md` |
 | `make install` | see the backend steps below |
 | `make dev` | `cd backend && uvicorn app.main:app --reload` |
 | `make check` | lint + type-check + tests (see below) |
@@ -271,7 +272,24 @@ _TODO._ Swagger UI is served at `/docs` once the backend is running.
 
 ## Results
 
-_TODO: parsing accuracy, ranking quality, keyword-only ablation, batch timing._
+### Parsing accuracy
+
+Measured by `make eval-parsing` on the 14 text samples and 3 JDs against `sample_data/ground_truth.json`. The full report, including every miss, is in [docs/parsing-accuracy.md](docs/parsing-accuracy.md).
+
+| Field | Metric | Result | Target |
+| --- | --- | --- | --- |
+| Name | Exact match after normalising case and spaces | 100% (14/14) | ≥ 90% |
+| Email | Exact match | 100% (14/14) | ≥ 98% |
+| Phone | Match after E.164 normalisation | 100% (14/14) | ≥ 95% |
+| Skills | Precision, recall and F1 | P 1.00, R 1.00, F1 1.00 (200 skills) | F1 ≥ 0.85 |
+| Total experience | Mean absolute error | 0.0 months | ≤ 6 months |
+| Degree level | Accuracy | 100% (14/14) | ≥ 90% |
+| Sections | Share of sections found | 100% (57/57) | ≥ 90% |
+| JD extraction | Required/preferred skills, years, degree, fields | 100% (3/3 JDs) | — |
+
+The scanned PDF (persona 15) is rejected with `scanned_pdf`, as expected. **Read these as an upper bound:** the parsers were developed against these same samples. The parser unit tests cover formats the samples don't have, and real resumes will be messier.
+
+_TODO: ranking quality, keyword-only ablation, batch timing._
 
 ## Project structure
 

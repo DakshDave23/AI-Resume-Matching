@@ -33,7 +33,7 @@ DB_USER ?= resume
 DB_NAME ?= resume_matcher
 
 .DEFAULT_GOAL := help
-.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples install dev test lint format typecheck check
+.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples eval-parsing install dev test lint format typecheck check
 
 help:  ## List targets
 	@$(LIST_TARGETS)
@@ -64,6 +64,9 @@ seed:  ## Load the skills taxonomy into the database (safe to re-run)
 samples:  ## Regenerate sample resumes and ground_truth.json from the personas
 	$(BACKEND_PY) scripts/generate_samples.py
 
+eval-parsing:  ## Measure parsing accuracy on the samples; saves docs/parsing-accuracy.md
+	$(BACKEND_PY) scripts/evaluate_parsing.py --out docs/parsing-accuracy.md
+
 # --- Backend ----------------------------------------------------------------
 install:  ## Create the backend venv and install dependencies
 	cd backend && $(PYTHON) -m venv .venv && $(VENV_PY) -m pip install -e ".[dev]"
@@ -74,13 +77,13 @@ dev:  ## Run the API with auto-reload on http://localhost:8000
 test:  ## Run backend tests
 	cd backend && $(PYTEST)
 
-lint:  ## Lint and check formatting
-	cd backend && $(RUFF) check . && $(RUFF) format --check .
+lint:  ## Lint and check formatting (backend and scripts)
+	cd backend && $(RUFF) check . ../scripts && $(RUFF) format --check . ../scripts
 
 format:  ## Auto-fix lint issues and format
-	cd backend && $(RUFF) check --fix . && $(RUFF) format .
+	cd backend && $(RUFF) check --fix . ../scripts && $(RUFF) format . ../scripts
 
 typecheck:  ## Run mypy
-	cd backend && $(MYPY) app tests
+	cd backend && $(MYPY) app tests ../scripts
 
 check: lint typecheck test  ## Everything CI runs
