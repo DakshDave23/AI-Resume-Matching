@@ -1,0 +1,32 @@
+# Local stack. Step 3: database only. Backend and frontend services are added in step 38.
+#
+#   docker compose up -d db      start Postgres + pgvector
+#   docker compose down          stop it (data is kept in the pgdata volume)
+#   docker compose down -v       stop it AND delete all data
+#
+# Values come from .env (copy .env.example); the defaults below match it.
+name: resume-matcher
+
+services:
+  db:
+    image: pgvector/pgvector:0.8.7-pg16  # pinned: pgvector 0.8.7 on Postgres 16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-resume}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-resume}
+      POSTGRES_DB: ${POSTGRES_DB:-resume_matcher}
+    ports:
+      # Bound to localhost only, so the database is not reachable from your network.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # *.sql files here run once, when the data volume is first created.
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

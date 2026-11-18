@@ -70,6 +70,30 @@ docker compose up --build
 
 ## Local development
 
+**Database** (Postgres 16 + pgvector 0.8.7, in Docker):
+
+```bash
+cp .env.example .env                   # once; Windows: copy .env.example .env
+docker compose up -d --wait db         # start and wait until healthy
+docker compose exec db psql -U resume -d resume_matcher   # SQL shell
+docker compose down                    # stop (keeps data)
+docker compose down -v                 # stop and DELETE all data
+```
+
+Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled automatically on first start.
+
+**Make targets** (macOS/Linux, or Windows with `winget install ezwinports.make`). Run `make` to list them all:
+
+| Target | Plain command |
+| --- | --- |
+| `make db-up` | `docker compose up -d --wait db` |
+| `make db-down` | `docker compose down` |
+| `make db-reset` | `docker compose down -v` then `make db-up` |
+| `make db-shell` | `docker compose exec db psql -U resume -d resume_matcher` |
+| `make install` | see the backend steps below |
+| `make dev` | `cd backend && uvicorn app.main:app --reload` |
+| `make check` | lint + type-check + tests (see below) |
+
 **Backend** (Python 3.12):
 
 ```bash
@@ -80,7 +104,7 @@ pip install -e ".[dev]"
 uvicorn app.main:app --reload          # http://localhost:8000/docs
 ```
 
-Health check: `GET http://localhost:8000/api/v1/health`
+Health check: `GET http://localhost:8000/api/v1/health` returns 200 with `"database": "ok"` when Postgres is up, or 503 when it isn't.
 
 Lint, type-check and test:
 

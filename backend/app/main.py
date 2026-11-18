@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import __version__
 from app.api.v1.router import api_router
 from app.core.config import get_settings
+from app.core.database import get_engine
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 
@@ -26,6 +27,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("Starting %s v%s (env=%s)", settings.app_name, __version__, settings.app_env)
     # Step 17: load spaCy and the embedding model here, once, and store them on app.state.
     yield
+    get_engine().dispose()  # close pooled DB connections cleanly
     logger.info("Shutting down")
 
 
