@@ -185,7 +185,7 @@ Name and location use the layout of the contact lines rather than named-entity r
 Skills are mapped to the taxonomy's canonical names, with the section and line each one came from.
 
 1. **Exact and alias pass.** A spaCy PhraseMatcher holds every name and alias, plus a simple plural ("tax audits" → Auditing). It matches whole tokens, so "Java" never fires inside "JavaScript". When matches overlap, the longest wins: "Spring Boot" is not also "Spring", and "T-SQL" is not also "SQL".
-2. **Everyday words.** Terms that are also English words ("go", "rest", "spring", "express", "C", "R") only match in free text when spelled like the skill ("Go", "Express") or in capitals ("REST"). "C-level executives" and "R&D" are never skills. Inside a skills list, any spelling counts.
+2. **Everyday words.** Terms that are also English words ("go", "rest", "spring", "express", "C", "R") only match in free text when spelled like the skill ("Go", "Express") or in capitals ("REST"). "ML" counts but "50 ml" doesn't. A one-letter skill (C, R) is never part of something else: "C-level", "R&D", "grade C", "Type C cable", "Section R" and "25 C" are not skills. Inside a skills list, any spelling counts.
 3. **Fuzzy pass.** In the skills section, each comma-separated item is judged as a whole. An item that no single exact match covers is compared with rapidfuzz (`token_sort_ratio` ≥ 90, and again with spaces removed): "Kubernetis" → Kubernetes, "Type Script" → TypeScript, "Postgress SQL" → PostgreSQL (not SQL).
 4. **Unmapped.** List items that match nothing (e.g. "Hystrix") are kept so the recruiter can add them to the taxonomy.
 
@@ -286,7 +286,16 @@ _TODO: parsing accuracy, ranking quality, keyword-only ablation, batch timing._
 
 ## Running tests
 
-_TODO._
+```bash
+make test          # unit + integration (integration needs: make db-up)
+make check         # lint, type check and tests, as CI runs them
+cd backend && pytest tests/unit/parsing -v   # just the parsers
+```
+
+The parser tests come in two kinds:
+
+- **Unit tests** (`test_dates.py`, `test_sections.py`, `test_skills.py`, `test_jd_parser.py`, ...) pin each rule with small inputs, including formats the samples don't have: 21 date formats, overlapping, nested, back-to-back and gapped roles, upper-case, colon and two-column headers, aliases (k8s), fuzzy variants (Node JS), the Java/JavaScript guard, short aliases (C, R, JS, ML), required vs preferred cues, "3–5 years" and "5+ years of Java".
+- **Sample tests** (`test_*_samples.py`) run every parser on the 14 text samples and 3 JDs and compare with `sample_data/ground_truth.json`. They share `tests/samples.py`, which extracts each sample file once per run.
 
 ## Limitations and future work
 

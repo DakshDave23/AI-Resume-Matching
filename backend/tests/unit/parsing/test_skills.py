@@ -30,6 +30,11 @@ def resume(text: str) -> SkillExtraction:
     [
         ("Built a JavaScript front end", ["JavaScript"]),  # the Java/JavaScript guard
         ("Wrote Java and JavaScript", ["Java", "JavaScript"]),
+        ("Java/JavaScript developer", ["Java", "JavaScript"]),
+        ("used javascript daily", ["JavaScript"]),
+        ("Built Java Script widgets", ["JavaScript"]),  # split word: one skill, not Java
+        ("Moved from Type Script to Go", ["TypeScript", "Go"]),
+        ("Ported Java EE apps", ["Java EE"]),  # not also Java
         ("Services in Spring Boot", ["Spring Boot"]),  # longest match: not also Spring
         ("Reports in T-SQL", ["T-SQL"]),  # not also SQL
         ("Deployed on k8s with Postgres", ["Kubernetes", "PostgreSQL"]),
@@ -65,6 +70,8 @@ def test_simple_plurals_match(text: str, expected: list[str]) -> None:
         ("Reported to C-level executives", []),
         ("Led R&D for the payments team", []),
         ("Worked in a fast-paced spring release cycle", []),
+        ("Built ML pipelines", ["Machine Learning"]),
+        ("Prepared 50 ml buffer solutions", []),  # a unit, not Machine Learning
     ],
 )
 def test_ambiguous_words_need_the_skill_spelling_in_free_text(
@@ -73,9 +80,28 @@ def test_ambiguous_words_need_the_skill_spelling_in_free_text(
     assert in_text(text) == expected
 
 
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Wrote C and C++ firmware", ["C", "C++"]),
+        ("Analysis in R and Python", ["R", "Python"]),
+        ("Embedded C, R and SQL", ["C", "R", "SQL"]),
+        ("Wrote JS and TS", ["JavaScript", "TypeScript"]),
+        ("Scored grade C in physics", []),
+        ("Fitted Type C cables", []),
+        ("See Section R of the report", []),
+        ("Earned a C grade", []),
+        ("Stored at 25 C", []),
+        ("Moved to plan B", []),
+    ],
+)
+def test_short_aliases(text: str, expected: list[str]) -> None:
+    assert in_text(text) == expected
+
+
 def test_ambiguous_words_match_in_any_case_inside_a_skill_list() -> None:
-    skills, _ = in_list("go, rest, ruby")
-    assert skills == ["Go", "REST APIs", "Ruby"]
+    skills, _ = in_list("go, rest, ruby, ml, c, r")
+    assert skills == ["Go", "REST APIs", "Ruby", "Machine Learning", "C", "R"]
 
 
 # --- Skill lists: fuzzy pass, labels, unmapped ------------------------------------

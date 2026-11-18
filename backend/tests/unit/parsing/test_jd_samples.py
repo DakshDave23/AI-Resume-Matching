@@ -5,29 +5,19 @@ into ground_truth.json: title, seniority, required and preferred skills, years,
 degree level, fields and the "or equivalent experience" flag.
 """
 
-import json
-from pathlib import Path
-from typing import Any
-
 import pytest
 
 from app.services.parsing.jd_parser import JobParse, parse_job
-
-SAMPLES = Path(__file__).resolve().parents[4] / "sample_data"
-JDS = json.loads((SAMPLES / "ground_truth.json").read_text(encoding="utf-8"))["jds"]
-
-
-def parsed(jd: dict[str, Any]) -> JobParse:
-    return parse_job((SAMPLES / jd["file"]).read_text(encoding="utf-8"))
+from tests.samples import JDS, Sample, jd, jd_id, jd_text
 
 
 def java_jd() -> JobParse:
-    return parsed(next(j for j in JDS if j["id"] == "backend_java"))
+    return parse_job(jd_text(jd("backend_java")))
 
 
-@pytest.mark.parametrize("jd", JDS, ids=lambda j: j["id"])
-def test_extraction_matches_expectations(jd: dict[str, Any]) -> None:
-    job = parsed(jd)
+@pytest.mark.parametrize("sample", JDS, ids=jd_id)
+def test_extraction_matches_expectations(sample: Sample) -> None:
+    job = parse_job(jd_text(sample))
     found = {
         "title": job.title,
         "seniority": job.seniority.value,
@@ -39,7 +29,7 @@ def test_extraction_matches_expectations(jd: dict[str, Any]) -> None:
         "fields_of_study": list(job.fields_of_study),
         "accepts_equivalent_experience": job.accepts_equivalent_experience,
     }
-    expected = {key: jd[key] for key in found}
+    expected = {key: sample[key] for key in found}
     expected["required_skills"] = sorted(expected["required_skills"])
     expected["preferred_skills"] = sorted(expected["preferred_skills"])
     assert found == expected

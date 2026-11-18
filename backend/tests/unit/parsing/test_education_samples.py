@@ -4,36 +4,23 @@ Each entry's degree, field, institution, year and level, and the resume's
 highest level, are checked against sample_data/ground_truth.json.
 """
 
-import json
-from pathlib import Path
-from typing import Any
-
 import pytest
 
-from app.services.extraction import extract_text
 from app.services.parsing.education import EducationResult, parse_education
-from app.services.parsing.sections import segment
-
-SAMPLES = Path(__file__).resolve().parents[4] / "sample_data"
-RESUMES = [
-    r
-    for r in json.loads((SAMPLES / "ground_truth.json").read_text(encoding="utf-8"))["resumes"]
-    if r["expected_parse_status"] == "parsed"
-]
+from tests.samples import TEXT_RESUMES, Sample, resume_id, resume_sections, text_resume
 
 
-def education_of(resume: dict[str, Any]) -> EducationResult:
-    text = extract_text((SAMPLES / resume["file"]).read_bytes(), resume["format"]).text
-    return parse_education(segment(text).text_of("education"))
+def education_of(resume: Sample) -> EducationResult:
+    return parse_education(resume_sections(resume).text_of("education"))
 
 
-@pytest.mark.parametrize("resume", RESUMES, ids=lambda r: r["file"])
-def test_highest_degree_level(resume: dict[str, Any]) -> None:
+@pytest.mark.parametrize("resume", TEXT_RESUMES, ids=resume_id)
+def test_highest_degree_level(resume: Sample) -> None:
     assert education_of(resume).highest_level == resume["degree_level"]
 
 
-@pytest.mark.parametrize("resume", RESUMES, ids=lambda r: r["file"])
-def test_entries_match_ground_truth(resume: dict[str, Any]) -> None:
+@pytest.mark.parametrize("resume", TEXT_RESUMES, ids=resume_id)
+def test_entries_match_ground_truth(resume: Sample) -> None:
     found = [
         {
             "degree": e.degree,
@@ -48,5 +35,4 @@ def test_entries_match_ground_truth(resume: dict[str, Any]) -> None:
 
 
 def test_the_diploma_only_persona_is_level_2() -> None:
-    resume = next(r for r in RESUMES if r["id"] == 11)
-    assert education_of(resume).highest_level == 2
+    assert education_of(text_resume(11)).highest_level == 2

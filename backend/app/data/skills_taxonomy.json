@@ -1,10 +1,10 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "skills": [
     {"name": "Java", "category": "language", "aliases": ["core java", "java se", "java 8", "java 11", "java 17", "java 21"]},
     {"name": "Python", "category": "language", "aliases": ["python3", "python 3"]},
-    {"name": "JavaScript", "category": "language", "aliases": ["js", "ecmascript", "es6", "es2015", "vanilla js", "vanilla javascript"]},
-    {"name": "TypeScript", "category": "language", "aliases": ["ts"]},
+    {"name": "JavaScript", "category": "language", "aliases": ["js", "java script", "ecmascript", "es6", "es2015", "vanilla js", "vanilla javascript"]},
+    {"name": "TypeScript", "category": "language", "aliases": ["ts", "type script"]},
     {"name": "C", "category": "language", "aliases": ["c language", "c programming"]},
     {"name": "C++", "category": "language", "aliases": ["cpp", "c plus plus"]},
     {"name": "C#", "category": "language", "aliases": ["csharp", "c sharp"]},

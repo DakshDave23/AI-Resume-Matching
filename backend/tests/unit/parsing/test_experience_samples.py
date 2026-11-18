@@ -5,27 +5,15 @@ months, its source and the current title are checked against
 sample_data/ground_truth.json, using its as-of date as "today".
 """
 
-import json
-from datetime import date
-from pathlib import Path
-from typing import Any
-
 import pytest
 
-from app.services.extraction import extract_text
 from app.services.parsing.dates import YearMonth
 from app.services.parsing.experience import WorkHistory, parse_experience
-from app.services.parsing.sections import segment
-
-SAMPLES = Path(__file__).resolve().parents[4] / "sample_data"
-GROUND_TRUTH = json.loads((SAMPLES / "ground_truth.json").read_text(encoding="utf-8"))
-AS_OF = date.fromisoformat(GROUND_TRUTH["as_of"])
-RESUMES = [r for r in GROUND_TRUTH["resumes"] if r["expected_parse_status"] == "parsed"]
+from tests.samples import AS_OF, TEXT_RESUMES, Sample, resume_id, resume_sections, text_resume
 
 
-def history_of(resume: dict[str, Any]) -> WorkHistory:
-    text = extract_text((SAMPLES / resume["file"]).read_bytes(), resume["format"]).text
-    sections = segment(text)
+def history_of(resume: Sample) -> WorkHistory:
+    sections = resume_sections(resume)
     return parse_experience(
         sections.text_of("experience"), today=AS_OF, summary=sections.text_of("summary")
     )
@@ -35,8 +23,8 @@ def month(value: YearMonth | None) -> str | None:
     return f"{value.year}-{value.month:02d}" if value else None
 
 
-@pytest.mark.parametrize("resume", RESUMES, ids=lambda r: r["file"])
-def test_roles_match_ground_truth(resume: dict[str, Any]) -> None:
+@pytest.mark.parametrize("resume", TEXT_RESUMES, ids=resume_id)
+def test_roles_match_ground_truth(resume: Sample) -> None:
     found = [
         {
             "title": role.title,
@@ -52,8 +40,8 @@ def test_roles_match_ground_truth(resume: dict[str, Any]) -> None:
     assert found == resume["roles"]
 
 
-@pytest.mark.parametrize("resume", RESUMES, ids=lambda r: r["file"])
-def test_totals_match_ground_truth(resume: dict[str, Any]) -> None:
+@pytest.mark.parametrize("resume", TEXT_RESUMES, ids=resume_id)
+def test_totals_match_ground_truth(resume: Sample) -> None:
     result = history_of(resume)
     assert result.total_months == resume["total_experience_months"]
     assert result.source == resume["experience_source"]
@@ -61,8 +49,7 @@ def test_totals_match_ground_truth(resume: dict[str, Any]) -> None:
 
 
 def test_persona_9_overlapping_roles_are_not_double_counted() -> None:
-    resume = next(r for r in RESUMES if r["id"] == 9)
-    result = history_of(resume)
+    result = history_of(text_resume(9))
 
     summed = sum(role.months(AS_OF) or 0 for role in result.roles)
     assert summed == 137  # 81 + 24 + 32: the freelance years sit inside the bank job

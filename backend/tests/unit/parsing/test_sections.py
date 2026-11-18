@@ -163,6 +163,52 @@ def test_a_repeated_section_is_merged() -> None:
     assert result.as_dict() == {"experience": "Role A\n\nRole B", "skills": "Java"}
 
 
+# --- Two-column layouts -------------------------------------------------------
+# PDF extraction reads a two-column page block by block, so a sidebar's sections
+# arrive before (or after) the main column's, with lines wrapped at the column width.
+
+SIDEBAR_FIRST = """\
+Rahul Verma
+Java Developer
+rahul.verma@example.com | +1 312 555 0119
+Technical Skills
+Java, Spring Boot, MySQL,
+REST, Docker, RabbitMQ, Git
+Education
+B.Tech in Computer Science,
+Deccan Institute of Technology,
+2021
+Summary
+Java developer with 5 years in the industry, 4 of them building
+backend systems for digital payments.
+Work Experience
+Java Developer
+Contoso Payments, Hyderabad
+Jun 2022 – Present
+- Built REST endpoints with Spring Boot and MySQL.
+"""
+
+
+def test_two_column_sidebar_read_first() -> None:
+    result = segment(SIDEBAR_FIRST)
+    assert result.names() == ["contact", "skills", "education", "summary", "experience"]
+    assert result.text_of("contact").endswith("+1 312 555 0119")
+    assert result.text_of("skills") == "Java, Spring Boot, MySQL,\nREST, Docker, RabbitMQ, Git"
+    assert result.text_of("education").endswith("Deccan Institute of Technology,\n2021")
+    assert result.text_of("experience").startswith("Java Developer\nContoso Payments")
+
+
+def test_two_column_sidebar_read_last() -> None:
+    text = (
+        "Asha Rao\nSummary\nBackend developer.\nExperience\nEngineer | Acme\n- Built APIs.\n"
+        "SKILLS\nJava\nSQL\nLANGUAGES\nEnglish, Hindi\nEDUCATION\nB.E., 2019"
+    )
+    result = segment(text)
+    assert result.names() == ["contact", "summary", "experience", "skills", "other", "education"]
+    assert result.text_of("experience") == "Engineer | Acme\n- Built APIs."
+    assert result.text_of("skills") == "Java\nSQL"  # the sidebar's languages stay out
+
+
 def test_a_line_continuing_a_wrapped_sentence_is_not_a_header() -> None:
     text = "Summary\nBackend developer with deep knowledge of\nEducation\ntechnology."
     assert names(text) == ["summary"]

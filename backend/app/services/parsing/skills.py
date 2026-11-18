@@ -33,14 +33,25 @@ from app.services.nlp.taxonomy import Taxonomy, get_taxonomy, normalize_term
 from app.services.parsing.contact import EMAIL, URL
 from app.services.parsing.sections import Segmentation
 
-# Taxonomy terms that are also everyday English words.
+# Taxonomy terms that are also everyday English words (or units: "50 ml").
 AMBIGUOUS_TERMS = frozenset(
     {
         "c", "r", "go", "rest", "spring", "express", "node", "vault", "ruby", "swift", "chef",
         "safe", "spa", "spas", "soap", "helm", "hive", "gin", "dart", "rust", "jest", "yarn",
-        "ann", "sap", "elk", "kube",
+        "ann", "sap", "elk", "kube", "ml",
     }
 )  # fmt: skip
+# A one-letter skill (C, R) after these words is a label: "grade C", "Type C", "Section R".
+_LETTER_LABELS = frozenset(
+    {
+        "grade", "section", "type", "class", "plan", "part", "group", "phase", "block",
+        "category", "tier", "level", "vitamin", "appendix", "schedule", "form", "model",
+        "option", "series", "round", "batch", "division", "sector", "wing", "unit", "room",
+        "team", "size", "row", "column", "exhibit", "annex", "zone", "gate", "floor",
+    }
+)  # fmt: skip
+_LETTER_SUFFIXES = frozenset({"grade", "level", "suite", "class", "rating"})  # "C grade"
+_JOINERS = frozenset({"-", "&", "'", ".", chr(0x2019), "°"})  # "C-level", "R&D", "25°C"
 
 FUZZY_MIN_SCORE = 90
 FUZZY_MIN_CHARS = 4  # "c#" and "f#" both become "c"/"f" once punctuation goes: too short
@@ -142,12 +153,18 @@ def _covers(spans: list[Span], doc: Doc) -> bool:
 
 
 def _is_plausible(span: Span) -> bool:
-    """Reject a one-letter skill that is part of something else: "C-level", "Grade-C"."""
+    """Reject a one-letter skill that is part of something else: "C-level", "R&D",
+    "grade C", "Type C cable", "Section C", "25 C"."""
     if len(span.text) > 1:
         return True
     doc = span.doc
-    neighbours = [doc[i].text for i in (span.start - 1, span.end) if 0 <= i < len(doc)]
-    return not any(n in {"-", "&", "'", "."} for n in neighbours)
+    before = doc[span.start - 1].text if span.start > 0 else ""
+    after = doc[span.end].text if span.end < len(doc) else ""
+    if before in _JOINERS or after in _JOINERS:
+        return False
+    if before.lower() in _LETTER_LABELS or after.lower() in _LETTER_SUFFIXES:
+        return False
+    return not before.replace(".", "").isdigit()
 
 
 class SkillExtractor:

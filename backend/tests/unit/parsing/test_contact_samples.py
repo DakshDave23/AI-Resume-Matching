@@ -3,43 +3,32 @@
 Phone, location and profile links are checked against sample_data/ground_truth.json too.
 """
 
-import json
-from pathlib import Path
-from typing import Any
-
 import pytest
 
-from app.services.extraction import extract_text
 from app.services.parsing.contact import ContactInfo, extract_contact
-from app.services.parsing.sections import CONTACT, segment
-
-SAMPLES = Path(__file__).resolve().parents[4] / "sample_data"
-RESUMES = [
-    r
-    for r in json.loads((SAMPLES / "ground_truth.json").read_text(encoding="utf-8"))["resumes"]
-    if r["expected_parse_status"] == "parsed"
-]
+from app.services.parsing.sections import CONTACT
+from tests.samples import TEXT_RESUMES, Sample, resume_id, resume_sections, resume_text
 
 
-def contact_of(resume: dict[str, Any]) -> ContactInfo:
-    text = extract_text((SAMPLES / resume["file"]).read_bytes(), resume["format"]).text
+def contact_of(resume: Sample) -> ContactInfo:
     # Sample phones all carry a country code; "IN" is the app's default region.
-    return extract_contact(segment(text).text_of(CONTACT), text, region="IN")
+    contact_block = resume_sections(resume).text_of(CONTACT)
+    return extract_contact(contact_block, resume_text(resume), region="IN")
 
 
 def without_scheme(url: str | None) -> str | None:
     return url.removeprefix("https://") if url else None
 
 
-@pytest.mark.parametrize("resume", RESUMES, ids=lambda r: r["file"])
-def test_name_and_email(resume: dict[str, Any]) -> None:
+@pytest.mark.parametrize("resume", TEXT_RESUMES, ids=resume_id)
+def test_name_and_email(resume: Sample) -> None:
     contact = contact_of(resume)
     assert contact.name == resume["name"]
     assert contact.email == resume["email"]
 
 
-@pytest.mark.parametrize("resume", RESUMES, ids=lambda r: r["file"])
-def test_phone_location_and_links(resume: dict[str, Any]) -> None:
+@pytest.mark.parametrize("resume", TEXT_RESUMES, ids=resume_id)
+def test_phone_location_and_links(resume: Sample) -> None:
     contact = contact_of(resume)
     assert contact.phone == resume["phone_e164"]
     assert contact.location == resume["location"]
