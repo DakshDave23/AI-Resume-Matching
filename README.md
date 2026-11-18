@@ -149,6 +149,21 @@ backend/.venv/Scripts/python scripts/generate_samples.py           # re-render (
 
 The generator refuses to write anything if the ground truth would be incomplete. For example, if a resume mentions a taxonomy skill that its persona doesn't list, it stops with an error.
 
+## Text extraction
+
+Every upload is checked before parsing. The file's content decides its type, not its extension: a PDF must start with `%PDF-`, and a DOCX must be a ZIP containing `word/document.xml`. Files over 5 MB, and DOCX files that unpack to an unreasonable size, are rejected with a reason.
+
+- **PDF:** PyMuPDF text blocks, read in column order. When a page has a real gutter, the left column is read fully before the right, so two-column resumes don't interleave. A PDF with almost no text is reported as *"Looks like a scanned image; OCR is not enabled."*
+- **DOCX:** page header first (templates often put the name there), then paragraphs and tables in document order (each merged cell once), then the footer. Word list items get a `- ` prefix.
+- **Cleaning:** NFKC normalisation (ligatures, full-width letters), every bullet symbol becomes `- `, words wrapped at a hyphen are rejoined, and whitespace is tidied. Line breaks are kept.
+
+To see exactly what the parser will receive from a file:
+
+```bash
+cd backend
+python -m app.services.extraction ../sample_data/resumes/03_candidate_a_two_column.pdf
+```
+
 ## How matching works
 
 ```
