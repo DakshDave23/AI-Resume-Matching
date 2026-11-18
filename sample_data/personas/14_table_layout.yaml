@@ -1,0 +1,51 @@
+# Persona 14 — every section is laid out in Word tables, as many resume templates do.
+id: 14
+slug: table_layout
+persona: Resume built entirely from Word tables
+tests: DOCX table extraction
+format: docx
+layout: tables
+date_format: mon_yyyy
+role_style: pipe
+bullet: "•"
+expected_tier: {backend_java: partial, data_scientist: weak, frontend_react: weak}
+
+contact:
+  name: Neha Gupta
+  email: neha.gupta@example.com
+  phone: "+1 (303) 555-0177"
+  location: Indore, India
+  linkedin: linkedin.com/in/neha-gupta-example
+
+headline: Software Developer
+summary: >-
+  Software developer with 4 years of experience building Java web applications
+  for manufacturing clients.
+
+experience:
+  - title: Software Developer
+    company: Pinnacle Infotech
+    location: Indore
+    start: "2023-09"
+    end: present
+    bullets:
+      - Build Spring Boot REST APIs for the plant maintenance system.
+      - Maintain MySQL schemas and stored procedures.
+      - Set up Jenkins jobs for automated builds.
+  - title: Associate Developer
+    company: Pinnacle Infotech
+    location: Indore
+    start: "2022-07"
+    end: "2023-08"
+    bullets:
+      - Fixed defects in Java reporting modules.
+
+skills:
+  Skills: [Java, Spring Boot, MySQL, REST APIs, Jenkins, Git]
+
+education:
+  - degree: B.Tech
+    field: Computer Science
+    institution: Malwa Institute of Technology
+    year: 2022
+    level: 3

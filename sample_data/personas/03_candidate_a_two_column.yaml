@@ -1,0 +1,55 @@
+# Persona 3 — "Candidate A" from design doc §6.6: MySQL instead of PostgreSQL, RabbitMQ instead
+# of Kafka, microservices only described, never named. Two-column PDF.
+id: 3
+slug: candidate_a_two_column
+persona: Java developer with MySQL and RabbitMQ (Candidate A in design doc §6.6)
+tests: Related-skill credit; contextual credit; two-column reading order
+format: pdf
+layout: two_column
+date_format: mon_yyyy
+role_style: stacked
+bullet: "–"
+expected_tier: {backend_java: strong, data_scientist: weak, frontend_react: weak}
+relevant_experience_months: {backend_java: 54}
+
+contact:
+  name: Rahul Verma
+  email: rahul.verma@example.com
+  phone: "+1 312 555 0119"
+  location: Hyderabad, India
+  github: github.com/rahulverma-example
+
+headline: Java Developer
+summary: >-
+  Java developer with 5.5 years in the industry, 4.5 of them building backend
+  systems for digital payments.
+
+experience:
+  - title: Java Developer
+    company: Contoso Payments
+    location: Hyderabad
+    start: "2022-06"
+    end: present
+    bullets:
+      - Built REST endpoints with Spring Boot and MySQL for wallet top-ups and refunds.
+      - Split a monolith into 8 independently deployed services, each with its own database and release cycle.
+      - Moved slow refund processing to asynchronous RabbitMQ consumers, cutting API response times by 60%.
+      - Packaged every service as a Docker image and wrote the team's deployment runbooks.
+  - title: Technical Support Engineer
+    company: Initrode Telecom
+    location: Hyderabad
+    start: "2021-06"
+    end: "2022-05"
+    bullets:
+      - Resolved broadband customer tickets and escalated network faults to field teams.
+      - Wrote troubleshooting guides used by 30 support agents.
+
+skills:
+  Skills: [Java, Spring Boot, MySQL, REST, Docker, RabbitMQ, Git]
+
+education:
+  - degree: B.Tech
+    field: Computer Science
+    institution: Deccan Institute of Technology
+    year: 2021
+    level: 3

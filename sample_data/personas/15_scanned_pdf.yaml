@@ -1,0 +1,41 @@
+# Persona 15 — a resume printed and scanned: the PDF holds only a page image, no text layer.
+# The parser must mark it failed with a clear reason, not crash and not score it.
+id: 15
+slug: scanned_pdf
+persona: Image-only (scanned) PDF
+tests: Graceful failure message
+format: pdf
+layout: scanned
+date_format: mon_yyyy
+role_style: pipe
+bullet: "•"
+expected_tier: {backend_java: failed, data_scientist: failed, frontend_react: failed}
+
+contact:
+  name: Sanjay Menon
+  email: sanjay.menon@example.com
+  phone: "+1 (206) 555-0115"
+  location: Thiruvananthapuram, India
+
+headline: Java Developer
+summary: >-
+  Java developer with 5 years of experience building backend services.
+
+experience:
+  - title: Java Developer
+    company: Globex Systems
+    location: Thiruvananthapuram
+    start: "2021-11"
+    end: present
+    bullets:
+      - Build Spring Boot services and REST APIs backed by PostgreSQL.
+
+skills:
+  Skills: [Java, Spring Boot, PostgreSQL, REST APIs]
+
+education:
+  - degree: B.Tech
+    field: Computer Science
+    institution: Kerala Institute of Engineering
+    year: 2021
+    level: 3

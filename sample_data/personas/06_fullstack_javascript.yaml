@@ -1,0 +1,57 @@
+# Persona 6 — JavaScript everywhere, Java nowhere. Contact details live in the DOCX page header.
+id: 6
+slug: fullstack_javascript
+persona: Full-stack JavaScript developer (Node, React)
+tests: Java vs JavaScript guard; contact block in a DOCX header
+format: docx
+layout: one_column
+contact_in_header: true
+date_format: mon_yyyy
+role_style: at
+bullet: "•"
+expected_tier: {backend_java: weak, data_scientist: weak, frontend_react: strong}
+
+contact:
+  name: Meera Pillai
+  email: meera.pillai@example.com
+  phone: "+1 (628) 555-0164"
+  location: Kochi, India
+  linkedin: linkedin.com/in/meera-pillai-example
+  github: github.com/meerapillai-example
+
+headline: Full Stack Developer
+summary: >-
+  Full stack developer with 6 years of experience shipping React front ends and
+  Node.js APIs for e-commerce products.
+
+experience:
+  - title: Full Stack Developer
+    company: Hooli Commerce
+    location: Kochi
+    start: "2022-02"
+    end: present
+    bullets:
+      - Built the storefront in React, TypeScript and Next.js, improving Lighthouse performance from 54 to 93.
+      - Wrote Node.js and Express APIs backed by MongoDB for carts, wishlists and promotions.
+      - Introduced Redux Toolkit for checkout state and Jest tests for every shared component.
+      - Made the checkout flow keyboard and screen-reader friendly.
+  - title: Frontend Developer
+    company: Stark Digital
+    location: Remote
+    start: "2020-08"
+    end: "2022-01"
+    bullets:
+      - Turned Figma designs into responsive pages with HTML5, CSS3 and Tailwind.
+      - Integrated REST APIs for product search and filters.
+
+skills:
+  Frontend: [JavaScript, TypeScript, React, Redux, Next.js, HTML5, CSS3, Tailwind CSS]
+  Backend: [Node.js, Express, MongoDB, REST APIs]
+  Testing and Tools: [Jest, Git, Figma]
+
+education:
+  - degree: B.Tech
+    field: Information Technology
+    institution: Coastal Engineering College
+    year: 2020
+    level: 3

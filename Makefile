@@ -33,7 +33,7 @@ DB_USER ?= resume
 DB_NAME ?= resume_matcher
 
 .DEFAULT_GOAL := help
-.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed install dev test lint format typecheck check
+.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples install dev test lint format typecheck check
 
 help:  ## List targets
 	@$(LIST_TARGETS)
@@ -60,6 +60,9 @@ migrate:  ## Apply all database migrations
 
 seed:  ## Load the skills taxonomy into the database (safe to re-run)
 	$(BACKEND_PY) scripts/seed_skills.py
+
+samples:  ## Regenerate sample resumes and ground_truth.json from the personas
+	$(BACKEND_PY) scripts/generate_samples.py
 
 # --- Backend ----------------------------------------------------------------
 install:  ## Create the backend venv and install dependencies

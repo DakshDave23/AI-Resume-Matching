@@ -1,0 +1,52 @@
+# Persona 11 — skills as strong as persona 1, but a diploma instead of a bachelor's degree.
+# Education score should be 0.5 (one level below), landing the candidate in "good", not "strong".
+id: 11
+slug: diploma_only
+persona: Strong skills, diploma only
+tests: Education scoring
+format: pdf
+layout: one_column
+date_format: mon_yyyy
+role_style: pipe
+bullet: "•"
+expected_tier: {backend_java: good, data_scientist: weak, frontend_react: weak}
+
+contact:
+  name: Suresh Babu
+  email: suresh.babu@example.com
+  phone: "+1 (404) 555-0123"
+  location: Coimbatore, India
+  github: github.com/sureshbabu-example
+
+headline: Backend Engineer
+summary: >-
+  Backend engineer with 6 years of hands-on experience building Java
+  microservices for payments and lending.
+
+experience:
+  - title: Backend Engineer
+    company: Acme Fintech
+    location: Bengaluru
+    start: "2023-01"
+    end: present
+    bullets:
+      - Build Spring Boot microservices for loan disbursement and repayments.
+      - Design REST APIs and PostgreSQL schemas for the lending ledger.
+      - Stream repayment events through Kafka and run services in Docker.
+  - title: Java Developer
+    company: Globex Systems
+    location: Coimbatore
+    start: "2020-11"
+    end: "2022-12"
+    bullets:
+      - Built Java services for invoice processing.
+
+skills:
+  Skills: [Java, Spring Boot, Microservices, REST APIs, PostgreSQL, Kafka, Docker, Git]
+
+education:
+  - degree: Diploma
+    field: Computer Engineering
+    institution: City Polytechnic College
+    year: 2020
+    level: 2

@@ -1,0 +1,1272 @@
+{
+  "description": "Expected parser output for the synthetic samples. All data is fictional.",
+  "generated_by": "scripts/generate_samples.py",
+  "as_of": "2026-11-01",
+  "conventions": {
+    "months": "Inclusive whole months: Jan 2020 - Mar 2020 is 3. 'Present' is the as_of month.",
+    "year_only_dates": "A start year means January; an end year means December.",
+    "total_experience_months": "Union of role date ranges with overlaps merged; internships excluded. Undated resumes use the figure stated in the summary.",
+    "skills": "Canonical taxonomy names the resume genuinely contains, from the skills section or the text. unmapped_skill_terms are skill-list items not in the taxonomy.",
+    "expected_tier": "strong > good > partial > weak; failed means parsing should fail."
+  },
+  "jds": [
+    {
+      "file": "jds/backend_java_developer.txt",
+      "id": "backend_java",
+      "title": "Senior Backend Java Developer",
+      "seniority": "senior",
+      "required_skills": [
+        "Java",
+        "Spring Boot",
+        "PostgreSQL",
+        "REST APIs",
+        "Microservices"
+      ],
+      "preferred_skills": [
+        "Docker",
+        "Kafka",
+        "AWS"
+      ],
+      "min_experience_years": 4.0,
+      "max_experience_years": null,
+      "degree_level": 3,
+      "fields_of_study": [
+        "Computer Science",
+        "Information Technology"
+      ],
+      "accepts_equivalent_experience": false
+    },
+    {
+      "file": "jds/data_scientist.txt",
+      "id": "data_scientist",
+      "title": "Data Scientist",
+      "seniority": "mid",
+      "required_skills": [
+        "Python",
+        "pandas",
+        "scikit-learn",
+        "SQL",
+        "Statistics",
+        "Machine Learning"
+      ],
+      "preferred_skills": [
+        "Deep Learning",
+        "TensorFlow",
+        "PyTorch",
+        "Apache Spark",
+        "A/B Testing",
+        "Tableau",
+        "Power BI"
+      ],
+      "min_experience_years": 3.0,
+      "max_experience_years": null,
+      "degree_level": 4,
+      "fields_of_study": [
+        "Statistics",
+        "Computer Science",
+        "Mathematics"
+      ],
+      "accepts_equivalent_experience": false
+    },
+    {
+      "file": "jds/frontend_react_developer.txt",
+      "id": "frontend_react",
+      "title": "Frontend React Developer",
+      "seniority": "mid",
+      "required_skills": [
+        "JavaScript",
+        "TypeScript",
+        "React",
+        "HTML",
+        "CSS",
+        "REST APIs"
+      ],
+      "preferred_skills": [
+        "Next.js",
+        "Redux",
+        "Jest",
+        "Web Accessibility"
+      ],
+      "min_experience_years": 3.0,
+      "max_experience_years": null,
+      "degree_level": 3,
+      "fields_of_study": [
+        "Computer Science"
+      ],
+      "accepts_equivalent_experience": true
+    }
+  ],
+  "resumes": [
+    {
+      "id": 1,
+      "file": "resumes/01_senior_java_engineer.pdf",
+      "persona": "Senior Java backend engineer with every required skill plus Docker and Kafka",
+      "tests": "Top of the ranking",
+      "format": "pdf",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Arjun Mehta",
+      "email": "arjun.mehta@example.com",
+      "phone_e164": "+12025550147",
+      "location": "Bengaluru, India",
+      "linkedin": "linkedin.com/in/arjun-mehta-example",
+      "github": "github.com/arjunmehta-example",
+      "current_title": "Senior Software Engineer",
+      "skills": [
+        "Design Patterns",
+        "Docker",
+        "Git",
+        "Hibernate",
+        "Java",
+        "Jenkins",
+        "JUnit",
+        "Kafka",
+        "Mentoring",
+        "Microservices",
+        "Mockito",
+        "Oracle Database",
+        "PostgreSQL",
+        "Redis",
+        "REST APIs",
+        "Spring",
+        "Spring Boot",
+        "Spring Security",
+        "SQL",
+        "Unit Testing"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Senior Software Engineer",
+          "company": "Acme Fintech",
+          "start": "2021-04",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Software Engineer",
+          "company": "Globex Systems",
+          "start": "2017-07",
+          "end": "2021-03",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 113,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science",
+          "institution": "Western Institute of Technology",
+          "year": 2017,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education",
+        "certifications"
+      ],
+      "expected_tier": {
+        "backend_java": "strong",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 2,
+      "file": "resumes/02_java_aliases.docx",
+      "persona": "Strong Java developer who writes \"Postgres\", \"k8s\" and \"RESTful services\"",
+      "tests": "Alias and semantic matching",
+      "format": "docx",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Priya Natarajan",
+      "email": "priya.natarajan@example.com",
+      "phone_e164": "+14155550182",
+      "location": "Chennai, India",
+      "linkedin": "linkedin.com/in/priya-natarajan-example",
+      "github": null,
+      "current_title": "Backend Engineer",
+      "skills": [
+        "Docker",
+        "Git",
+        "Helm",
+        "Hibernate",
+        "Java",
+        "Kubernetes",
+        "Maven",
+        "Microservices",
+        "PostgreSQL",
+        "REST APIs",
+        "Spring",
+        "Spring Boot"
+      ],
+      "unmapped_skill_terms": [
+        "Hystrix"
+      ],
+      "roles": [
+        {
+          "title": "Backend Engineer",
+          "company": "Initech Software",
+          "start": "2020-03",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Java Developer",
+          "company": "Vandelay Logistics",
+          "start": "2018-06",
+          "end": "2020-02",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 102,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.E.",
+          "field": "Computer Engineering",
+          "institution": "Southern College of Engineering",
+          "year": 2018,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "strong",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 3,
+      "file": "resumes/03_candidate_a_two_column.pdf",
+      "persona": "Java developer with MySQL and RabbitMQ (Candidate A in design doc §6.6)",
+      "tests": "Related-skill credit; contextual credit; two-column reading order",
+      "format": "pdf",
+      "layout": "two_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Rahul Verma",
+      "email": "rahul.verma@example.com",
+      "phone_e164": "+13125550119",
+      "location": "Hyderabad, India",
+      "linkedin": null,
+      "github": "github.com/rahulverma-example",
+      "current_title": "Java Developer",
+      "skills": [
+        "Docker",
+        "Git",
+        "Java",
+        "MySQL",
+        "RabbitMQ",
+        "REST APIs",
+        "Spring Boot"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Java Developer",
+          "company": "Contoso Payments",
+          "start": "2022-06",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Technical Support Engineer",
+          "company": "Initrode Telecom",
+          "start": "2021-06",
+          "end": "2022-05",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 66,
+      "experience_source": "dates",
+      "relevant_experience_months": {
+        "backend_java": 54
+      },
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science",
+          "institution": "Deccan Institute of Technology",
+          "year": 2021,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "strong",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 4,
+      "file": "resumes/04_junior_java_candidate_c.docx",
+      "persona": "Junior Java developer, 2 years (Candidate C in design doc §6.6)",
+      "tests": "Experience shortfall; internship excluded from total years",
+      "format": "docx",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Sneha Kulkarni",
+      "email": "sneha.kulkarni@example.com",
+      "phone_e164": "+16465550133",
+      "location": "Pune, India",
+      "linkedin": "linkedin.com/in/sneha-kulkarni-example",
+      "github": null,
+      "current_title": "Software Engineer",
+      "skills": [
+        "AWS",
+        "Git",
+        "Java",
+        "JUnit",
+        "PostgreSQL",
+        "REST APIs"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Software Engineer",
+          "company": "Umbrella Health Tech",
+          "start": "2024-12",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Software Engineering Intern",
+          "company": "Umbrella Health Tech",
+          "start": "2024-06",
+          "end": "2024-11",
+          "is_current": false,
+          "is_internship": true,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 24,
+      "experience_source": "dates",
+      "relevant_experience_months": {
+        "backend_java": 24
+      },
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science",
+          "institution": "Western Institute of Technology",
+          "year": 2024,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "partial",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 5,
+      "file": "resumes/05_python_django_backend.pdf",
+      "persona": "Python/Django backend developer, 6 years",
+      "tests": "Transferable but different stack; year-only date ranges",
+      "format": "pdf",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Karthik Iyer",
+      "email": "karthik.iyer@example.com",
+      "phone_e164": "+442079460321",
+      "location": "Bengaluru, India",
+      "linkedin": null,
+      "github": "github.com/karthikiyer-example",
+      "current_title": "Senior Backend Developer",
+      "skills": [
+        "AWS",
+        "Celery",
+        "Django",
+        "Django REST Framework",
+        "Docker",
+        "Flask",
+        "Git",
+        "PostgreSQL",
+        "Python",
+        "Redis",
+        "REST APIs",
+        "SQL"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Brightline Media",
+          "start": "2024-01",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "year"
+        },
+        {
+          "title": "Backend Developer",
+          "company": "Pied Piper Analytics",
+          "start": "2021-01",
+          "end": "2023-12",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "year"
+        }
+      ],
+      "total_experience_months": 71,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Sc",
+          "field": "Computer Science",
+          "institution": "Lakeside College of Science",
+          "year": 2020,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "partial",
+        "data_scientist": "partial",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 6,
+      "file": "resumes/06_fullstack_javascript.docx",
+      "persona": "Full-stack JavaScript developer (Node, React)",
+      "tests": "Java vs JavaScript guard; contact block in a DOCX header",
+      "format": "docx",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Meera Pillai",
+      "email": "meera.pillai@example.com",
+      "phone_e164": "+16285550164",
+      "location": "Kochi, India",
+      "linkedin": "linkedin.com/in/meera-pillai-example",
+      "github": "github.com/meerapillai-example",
+      "current_title": "Full Stack Developer",
+      "skills": [
+        "CSS",
+        "Express.js",
+        "Figma",
+        "Git",
+        "HTML",
+        "JavaScript",
+        "Jest",
+        "MongoDB",
+        "Next.js",
+        "Node.js",
+        "React",
+        "Redux",
+        "REST APIs",
+        "Tailwind CSS",
+        "TypeScript"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Full Stack Developer",
+          "company": "Hooli Commerce",
+          "start": "2022-02",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Frontend Developer",
+          "company": "Stark Digital",
+          "start": "2020-08",
+          "end": "2022-01",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 76,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Information Technology",
+          "institution": "Coastal Engineering College",
+          "year": 2020,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "weak",
+        "data_scientist": "weak",
+        "frontend_react": "strong"
+      }
+    },
+    {
+      "id": 7,
+      "file": "resumes/07_keyword_stuffer.pdf",
+      "persona": "Keyword stuffer: 60-item skills list, thin experience",
+      "tests": "Semantic component resists keyword stuffing",
+      "format": "pdf",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Rohan Kapoor",
+      "email": "rohan.kapoor@example.com",
+      "phone_e164": "+13055550171",
+      "location": "Noida, India",
+      "linkedin": null,
+      "github": null,
+      "current_title": "Software Engineer",
+      "skills": [
+        ".NET",
+        "Agile",
+        "Angular",
+        "Ansible",
+        "Apache Spark",
+        "AWS",
+        "C#",
+        "C++",
+        "Cassandra",
+        "CI/CD",
+        "CSS",
+        "Data Structures",
+        "Design Patterns",
+        "Django",
+        "Docker",
+        "Elasticsearch",
+        "Flask",
+        "Git",
+        "GitHub Actions",
+        "Go",
+        "Google Cloud Platform",
+        "GraphQL",
+        "gRPC",
+        "Hadoop",
+        "Hibernate",
+        "HTML",
+        "Java",
+        "JavaScript",
+        "Jenkins",
+        "JUnit",
+        "Kafka",
+        "Kotlin",
+        "Kubernetes",
+        "Linux",
+        "Machine Learning",
+        "Microservices",
+        "Microsoft Azure",
+        "MongoDB",
+        "MySQL",
+        "Node.js",
+        "pandas",
+        "PostgreSQL",
+        "Power BI",
+        "Python",
+        "RabbitMQ",
+        "React",
+        "Redis",
+        "REST APIs",
+        "Rust",
+        "Scala",
+        "Scrum",
+        "Selenium",
+        "Spring Boot",
+        "Spring Security",
+        "System Design",
+        "Tableau",
+        "TensorFlow",
+        "Terraform",
+        "TypeScript",
+        "Vue.js"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Software Engineer",
+          "company": "Generic Solutions Pvt Ltd",
+          "start": "2023-01",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 47,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science",
+          "institution": "Northern Institute of Engineering",
+          "year": 2022,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "partial",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 8,
+      "file": "resumes/08_qa_to_backend.docx",
+      "persona": "QA automation engineer moving to backend: 5 years total, 1.5 relevant",
+      "tests": "Relevance-weighted experience",
+      "format": "docx",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Vikram Rao",
+      "email": "vikram.rao@example.com",
+      "phone_e164": "+17375550108",
+      "location": "Mysuru, India",
+      "linkedin": "linkedin.com/in/vikram-rao-example",
+      "github": null,
+      "current_title": "Backend Developer",
+      "skills": [
+        "Cucumber",
+        "Git",
+        "Java",
+        "Jenkins",
+        "PostgreSQL",
+        "Postman",
+        "Quality Assurance",
+        "Regression Testing",
+        "REST APIs",
+        "Selenium",
+        "Spring Boot",
+        "SQL",
+        "TestNG"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Backend Developer",
+          "company": "Initech Software",
+          "start": "2025-06",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "QA Automation Engineer",
+          "company": "Vandelay Logistics",
+          "start": "2021-12",
+          "end": "2025-05",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 60,
+      "experience_source": "dates",
+      "relevant_experience_months": {
+        "backend_java": 18
+      },
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.E.",
+          "field": "Electronics and Communication",
+          "institution": "Mysuru Institute of Engineering",
+          "year": 2021,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "partial",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 9,
+      "file": "resumes/09_overlapping_roles.pdf",
+      "persona": "Freelance and full-time roles at the same time",
+      "tests": "Overlap merging",
+      "format": "pdf",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Ananya Desai",
+      "email": "ananya.desai@example.com",
+      "phone_e164": "+442079460744",
+      "location": "Mumbai, India",
+      "linkedin": "linkedin.com/in/ananya-desai-example",
+      "github": "github.com/ananyadesai-example",
+      "current_title": "Senior Java Developer",
+      "skills": [
+        "AWS",
+        "Docker",
+        "Java",
+        "Kafka",
+        "Kubernetes",
+        "Microservices",
+        "PostgreSQL",
+        "REST APIs",
+        "Spring Boot"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Senior Java Developer",
+          "company": "Contoso Bank",
+          "start": "2020-03",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Freelance Backend Consultant",
+          "company": "Self-employed",
+          "start": "2022-01",
+          "end": "2023-12",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Java Developer",
+          "company": "Globex Systems",
+          "start": "2017-07",
+          "end": "2020-02",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 113,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 4,
+      "education": [
+        {
+          "degree": "M.Tech",
+          "field": "Computer Science",
+          "institution": "Western Institute of Technology",
+          "year": 2017,
+          "level": 4
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "strong",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 10,
+      "file": "resumes/10_no_dates.docx",
+      "persona": "No dates, \"7 years of experience\" in the summary",
+      "tests": "Fallback experience logic",
+      "format": "docx",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Imran Qureshi",
+      "email": "imran.qureshi@example.com",
+      "phone_e164": "+15125550156",
+      "location": "Lucknow, India",
+      "linkedin": null,
+      "github": null,
+      "current_title": "Software Engineer",
+      "skills": [
+        "Hibernate",
+        "Java",
+        "JUnit",
+        "Maven",
+        "MySQL",
+        "REST APIs",
+        "Spring"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Software Engineer",
+          "company": "Wayne Retail Tech",
+          "start": null,
+          "end": null,
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": null
+        },
+        {
+          "title": "Java Developer",
+          "company": "Soylent Systems",
+          "start": null,
+          "end": null,
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": null
+        }
+      ],
+      "total_experience_months": 84,
+      "experience_source": "summary_statement",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "BCA",
+          "field": "Computer Applications",
+          "institution": "Awadh College",
+          "year": 2016,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "partial",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 11,
+      "file": "resumes/11_diploma_only.pdf",
+      "persona": "Strong skills, diploma only",
+      "tests": "Education scoring",
+      "format": "pdf",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Suresh Babu",
+      "email": "suresh.babu@example.com",
+      "phone_e164": "+14045550123",
+      "location": "Coimbatore, India",
+      "linkedin": null,
+      "github": "github.com/sureshbabu-example",
+      "current_title": "Backend Engineer",
+      "skills": [
+        "Docker",
+        "Git",
+        "Java",
+        "Kafka",
+        "Microservices",
+        "PostgreSQL",
+        "REST APIs",
+        "Spring Boot"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Backend Engineer",
+          "company": "Acme Fintech",
+          "start": "2023-01",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Java Developer",
+          "company": "Globex Systems",
+          "start": "2020-11",
+          "end": "2022-12",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 73,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 2,
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Computer Engineering",
+          "institution": "City Polytechnic College",
+          "year": 2020,
+          "level": 2
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "good",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 12,
+      "file": "resumes/12_data_scientist.pdf",
+      "persona": "Data scientist",
+      "tests": "Low for the Java JD, high for the Data Scientist JD",
+      "format": "pdf",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Fatima Shaikh",
+      "email": "fatima.shaikh@example.com",
+      "phone_e164": "+16175550190",
+      "location": "Pune, India",
+      "linkedin": "linkedin.com/in/fatima-shaikh-example",
+      "github": "github.com/fatimashaikh-example",
+      "current_title": "Data Scientist",
+      "skills": [
+        "A/B Testing",
+        "Apache Spark",
+        "Jupyter",
+        "Machine Learning",
+        "Natural Language Processing",
+        "NumPy",
+        "pandas",
+        "Python",
+        "R",
+        "scikit-learn",
+        "SQL",
+        "Statistics",
+        "Tableau",
+        "TensorFlow",
+        "XGBoost"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Data Scientist",
+          "company": "Orion Insights",
+          "start": "2022-08",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Data Analyst",
+          "company": "Northwind Traders",
+          "start": "2020-07",
+          "end": "2022-07",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 77,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 4,
+      "education": [
+        {
+          "degree": "M.Sc",
+          "field": "Statistics",
+          "institution": "Deccan University",
+          "year": 2020,
+          "level": 4
+        },
+        {
+          "degree": "B.Sc",
+          "field": "Mathematics",
+          "institution": "Deccan University",
+          "year": 2018,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "weak",
+        "data_scientist": "strong",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 13,
+      "file": "resumes/13_accountant.docx",
+      "persona": "Accountant",
+      "tests": "Sets the semantic floor L; should rank last",
+      "format": "docx",
+      "layout": "one_column",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Deepak Joshi",
+      "email": "deepak.joshi@example.com",
+      "phone_e164": "+442079460958",
+      "location": "Jaipur, India",
+      "linkedin": null,
+      "github": null,
+      "current_title": "Senior Accountant",
+      "skills": [
+        "Accounting",
+        "Accounts Payable",
+        "Auditing",
+        "Bank Reconciliation",
+        "Financial Reporting",
+        "GST",
+        "Microsoft Excel",
+        "Payroll",
+        "Tally",
+        "Taxation"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Senior Accountant",
+          "company": "Sterling Traders",
+          "start": "2019-04",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Accounts Executive",
+          "company": "Pioneer Agro Products",
+          "start": "2016-06",
+          "end": "2019-03",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 126,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Com",
+          "field": "Accounting",
+          "institution": "Rajasthan Commerce College",
+          "year": 2016,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "weak",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 14,
+      "file": "resumes/14_table_layout.docx",
+      "persona": "Resume built entirely from Word tables",
+      "tests": "DOCX table extraction",
+      "format": "docx",
+      "layout": "tables",
+      "expected_parse_status": "parsed",
+      "expected_failure": null,
+      "name": "Neha Gupta",
+      "email": "neha.gupta@example.com",
+      "phone_e164": "+13035550177",
+      "location": "Indore, India",
+      "linkedin": "linkedin.com/in/neha-gupta-example",
+      "github": null,
+      "current_title": "Software Developer",
+      "skills": [
+        "Git",
+        "Java",
+        "Jenkins",
+        "MySQL",
+        "REST APIs",
+        "Spring Boot"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Software Developer",
+          "company": "Pinnacle Infotech",
+          "start": "2023-09",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        },
+        {
+          "title": "Associate Developer",
+          "company": "Pinnacle Infotech",
+          "start": "2022-07",
+          "end": "2023-08",
+          "is_current": false,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 53,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science",
+          "institution": "Malwa Institute of Technology",
+          "year": 2022,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "partial",
+        "data_scientist": "weak",
+        "frontend_react": "weak"
+      }
+    },
+    {
+      "id": 15,
+      "file": "resumes/15_scanned_pdf.pdf",
+      "persona": "Image-only (scanned) PDF",
+      "tests": "Graceful failure message",
+      "format": "pdf",
+      "layout": "scanned",
+      "expected_parse_status": "failed",
+      "expected_failure": "scanned_pdf",
+      "name": "Sanjay Menon",
+      "email": "sanjay.menon@example.com",
+      "phone_e164": "+12065550115",
+      "location": "Thiruvananthapuram, India",
+      "linkedin": null,
+      "github": null,
+      "current_title": "Java Developer",
+      "skills": [
+        "Java",
+        "PostgreSQL",
+        "REST APIs",
+        "Spring Boot"
+      ],
+      "unmapped_skill_terms": [],
+      "roles": [
+        {
+          "title": "Java Developer",
+          "company": "Globex Systems",
+          "start": "2021-11",
+          "end": null,
+          "is_current": true,
+          "is_internship": false,
+          "date_precision": "month"
+        }
+      ],
+      "total_experience_months": 61,
+      "experience_source": "dates",
+      "relevant_experience_months": null,
+      "degree_level": 3,
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science",
+          "institution": "Kerala Institute of Engineering",
+          "year": 2021,
+          "level": 3
+        }
+      ],
+      "sections": [
+        "summary",
+        "experience",
+        "skills",
+        "education"
+      ],
+      "expected_tier": {
+        "backend_java": "failed",
+        "data_scientist": "failed",
+        "frontend_react": "failed"
+      }
+    }
+  ]
+}

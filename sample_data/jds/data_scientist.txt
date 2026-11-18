@@ -1,0 +1,27 @@
+Job Title: Data Scientist
+Company: Bluepeak Retail Analytics (synthetic)
+Location: Pune, India
+
+About us
+Bluepeak helps retailers understand their customers. Our team of data scientists builds the models behind demand forecasting, pricing and personalised recommendations.
+
+What you will do
+- Build, evaluate and deploy machine learning models for forecasting and recommendations.
+- Analyse large datasets to find trends and turn them into clear business recommendations.
+- Design and analyse experiments to measure the impact of product changes.
+- Write clean, reusable code for data preparation and model inputs.
+- Present findings to non-technical stakeholders with clear visualisations.
+- Work with data engineers to move models from notebooks into production pipelines.
+
+Must have
+- 3+ years of experience as a data scientist or machine learning engineer.
+- Strong programming skills in Python, including pandas and scikit-learn.
+- Proficient in SQL.
+- Solid foundation in statistics and machine learning.
+- Master's degree in Statistics, Computer Science, Mathematics or a related field.
+
+Preferred
+- Experience with deep learning frameworks such as TensorFlow or PyTorch.
+- Familiarity with Apache Spark for large-scale data processing.
+- Experience with A/B testing.
+- Knowledge of Tableau or Power BI is a bonus.

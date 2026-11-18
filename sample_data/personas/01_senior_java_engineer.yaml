@@ -1,0 +1,65 @@
+# Persona 1 — every required Java JD skill plus Docker and Kafka. Should rank first.
+id: 1
+slug: senior_java_engineer
+persona: Senior Java backend engineer with every required skill plus Docker and Kafka
+tests: Top of the ranking
+format: pdf
+layout: one_column
+date_format: mon_yyyy
+role_style: pipe
+bullet: "•"
+expected_tier: {backend_java: strong, data_scientist: weak, frontend_react: weak}
+
+contact:
+  name: Arjun Mehta
+  email: arjun.mehta@example.com
+  phone: "+1 (202) 555-0147"
+  location: Bengaluru, India
+  linkedin: linkedin.com/in/arjun-mehta-example
+  github: github.com/arjunmehta-example
+
+headline: Senior Backend Engineer
+summary: >-
+  Backend engineer with 9 years of experience designing high-throughput payment
+  services in Java and Spring Boot. I enjoy turning slow, fragile systems into
+  fast, observable ones and mentoring the engineers around me.
+
+experience:
+  - title: Senior Software Engineer
+    company: Acme Fintech
+    location: Bengaluru
+    start: "2021-04"
+    end: present
+    bullets:
+      - Lead a team of five building Spring Boot microservices that settle 3 million card transactions a day.
+      - Designed REST APIs for merchant onboarding used by web, mobile and partner integrations.
+      - Cut p95 latency of the ledger service from 480 ms to 90 ms by tuning PostgreSQL indexes and queries.
+      - Introduced Kafka event streams between payment, ledger and notification services.
+      - Containerised all services with Docker and moved deployments to a Jenkins pipeline.
+  - title: Software Engineer
+    company: Globex Systems
+    location: Pune
+    start: "2017-07"
+    end: "2021-03"
+    bullets:
+      - Built Java services for an insurance claims platform using Spring and Hibernate.
+      - Wrote unit tests with JUnit and Mockito, raising coverage from 40% to 85%.
+      - Migrated reporting queries from a legacy Oracle Database to PostgreSQL.
+
+skills:
+  Languages: [Java, SQL]
+  Frameworks: [Spring Boot, Spring Security, Hibernate]
+  Databases: [PostgreSQL, Redis]
+  Messaging and DevOps: [Kafka, Docker, Jenkins, Git]
+  Architecture: [Microservices, REST APIs, Design Patterns]
+also_mentions: [Spring, JUnit, Mockito, Unit Testing, Oracle Database, Mentoring]
+
+education:
+  - degree: B.Tech
+    field: Computer Science
+    institution: Western Institute of Technology
+    year: 2017
+    level: 3
+
+certifications:
+  - Oracle Certified Professional, Java SE 11 Developer

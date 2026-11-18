@@ -390,7 +390,7 @@
     {"name": "Android", "category": "concept", "aliases": ["android development"]},
     {"name": "iOS", "category": "concept", "aliases": ["ios development"]},
     {"name": "Blockchain", "category": "concept", "aliases": []},
-    {"name": "Payment Systems", "category": "concept", "aliases": ["payment gateway", "payment gateways", "payments"]},
+    {"name": "Payment Systems", "category": "concept", "aliases": ["payment gateway", "payment gateways"]},
 
     {"name": "Agile", "category": "methodology", "aliases": ["agile methodology", "agile methodologies", "agile development"]},
     {"name": "Scrum", "category": "methodology", "aliases": []},

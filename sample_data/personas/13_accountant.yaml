@@ -1,0 +1,52 @@
+# Persona 13 — a completely unrelated profession. Its raw semantic score sets the floor L.
+id: 13
+slug: accountant
+persona: Accountant
+tests: Sets the semantic floor L; should rank last
+format: docx
+layout: one_column
+date_format: month_yyyy
+role_style: at
+bullet: "•"
+docx_list_bullets: true
+expected_tier: {backend_java: weak, data_scientist: weak, frontend_react: weak}
+
+contact:
+  name: Deepak Joshi
+  email: deepak.joshi@example.com
+  phone: "+44 20 7946 0958"
+  location: Jaipur, India
+
+headline: Senior Accountant
+summary: >-
+  Chartered accountant with 10 years of experience in bookkeeping, GST
+  compliance and month-end closing for trading and manufacturing firms.
+
+experience:
+  - title: Senior Accountant
+    company: Sterling Traders
+    location: Jaipur
+    start: "2019-04"
+    end: present
+    bullets:
+      - Prepare monthly financial statements and manage the month-end close.
+      - File GST returns and handle tax audits for three group companies.
+      - Reconcile bank accounts and vendor ledgers in Tally.
+  - title: Accounts Executive
+    company: Pioneer Agro Products
+    location: Jaipur
+    start: "2016-06"
+    end: "2019-03"
+    bullets:
+      - Processed payroll for 250 employees and managed accounts payable.
+
+skills:
+  Skills: [Tally, GST, Microsoft Excel, Financial Reporting, Bank Reconciliation, Accounts Payable, Payroll, Taxation]
+also_mentions: [Accounting, Auditing]
+
+education:
+  - degree: B.Com
+    field: Accounting
+    institution: Rajasthan Commerce College
+    year: 2016
+    level: 3

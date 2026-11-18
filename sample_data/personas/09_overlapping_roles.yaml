@@ -1,0 +1,64 @@
+# Persona 9 — a freelance role held alongside a full-time job. Summing durations naively gives
+# 137 months; merging the overlap gives the correct 113.
+id: 9
+slug: overlapping_roles
+persona: Freelance and full-time roles at the same time
+tests: Overlap merging
+format: pdf
+layout: one_column
+date_format: mon_yyyy
+role_style: pipe
+bullet: "▪"
+expected_tier: {backend_java: strong, data_scientist: weak, frontend_react: weak}
+
+contact:
+  name: Ananya Desai
+  email: ananya.desai@example.com
+  phone: "+44 20 7946 0744"
+  location: Mumbai, India
+  linkedin: linkedin.com/in/ananya-desai-example
+  github: github.com/ananyadesai-example
+
+headline: Senior Java Developer
+summary: >-
+  Java developer with more than 9 years of experience building banking and
+  fintech backends, including two years of freelance consulting alongside a
+  full-time role.
+
+experience:
+  - title: Senior Java Developer
+    company: Contoso Bank
+    location: Mumbai
+    start: "2020-03"
+    end: present
+    bullets:
+      - Own the Spring Boot microservices behind the bank's account opening journey.
+      - Designed REST APIs and PostgreSQL schemas for KYC document checks.
+      - Moved services to Kubernetes on AWS with Docker images built in CI.
+      - Publish account events to Kafka for downstream fraud checks.
+  - title: Freelance Backend Consultant
+    company: Self-employed
+    location: Remote
+    start: "2022-01"
+    end: "2023-12"
+    bullets:
+      - Built Java and Spring Boot APIs for three early-stage fintech clients.
+  - title: Java Developer
+    company: Globex Systems
+    location: Pune
+    start: "2017-07"
+    end: "2020-02"
+    bullets:
+      - Maintained Java services for loan origination.
+
+skills:
+  Backend: [Java, Spring Boot, Microservices, REST APIs]
+  Data: [PostgreSQL, Kafka]
+  Cloud and DevOps: [Docker, Kubernetes, AWS]
+
+education:
+  - degree: M.Tech
+    field: Computer Science
+    institution: Western Institute of Technology
+    year: 2017
+    level: 4

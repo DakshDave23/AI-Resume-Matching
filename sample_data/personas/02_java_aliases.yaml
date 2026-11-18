@@ -1,0 +1,75 @@
+# Persona 2 — strong Java developer who writes aliases and synonyms instead of canonical names.
+id: 2
+slug: java_aliases
+persona: Strong Java developer who writes "Postgres", "k8s" and "RESTful services"
+tests: Alias and semantic matching
+format: docx
+layout: one_column
+date_format: month_yyyy
+role_style: at
+bullet: "▪"
+present_word: Till date
+uppercase_headers: true
+header_colon: true
+section_titles:
+  summary: Profile
+  experience: Professional Experience
+  skills: Core Competencies
+  education: Academic Qualifications
+expected_tier: {backend_java: strong, data_scientist: weak, frontend_react: weak}
+
+contact:
+  name: Priya Natarajan
+  email: priya.natarajan@example.com
+  phone: "+1-415-555-0182"
+  location: Chennai, India
+  linkedin: linkedin.com/in/priya-natarajan-example
+
+headline: Backend Engineer
+summary: >-
+  Java engineer with 8 years of experience building distributed backend systems
+  for logistics and e-commerce. Comfortable owning services from design to
+  production support.
+
+experience:
+  - title: Backend Engineer
+    company: Initech Software
+    location: Chennai
+    start: "2020-03"
+    end: present
+    bullets:
+      - Built RESTful services in Java 11 with Spring-Boot for shipment tracking across 40 warehouses.
+      - Decomposed the order platform into a microservice architecture of 12 independently deployable services.
+      - Designed Postgres schemas and partitioned the events table, cutting storage costs by 35%.
+      - Ran all services on k8s with Helm charts and blue-green deployments.
+  - title: Java Developer
+    company: Vandelay Logistics
+    location: Coimbatore
+    start: "2018-06"
+    end: "2020-02"
+    bullets:
+      - Developed route-planning services with Spring and Hibernate.
+      - Built batch jobs that import carrier rate files every night.
+
+skills:
+  Core Competencies:
+    - Java 11
+    - Spring-Boot
+    - Hibernate
+    - Postgres
+    - k8s
+    - Docker
+    - RESTful services
+    - microservice architecture
+    - Git
+    - Maven
+    - Hystrix
+unmapped: [Hystrix]
+also_mentions: [Spring, Helm]
+
+education:
+  - degree: B.E.
+    field: Computer Engineering
+    institution: Southern College of Engineering
+    year: 2018
+    level: 3

@@ -1,0 +1,106 @@
+# Persona 7 — a 60-item skills list and almost nothing behind it. Skill score should be high,
+# semantic score low: the experience bullets never describe real work.
+id: 7
+slug: keyword_stuffer
+persona: "Keyword stuffer: 60-item skills list, thin experience"
+tests: Semantic component resists keyword stuffing
+format: pdf
+layout: one_column
+date_format: mon_yyyy
+role_style: pipe
+bullet: "•"
+skills_style: paragraph
+expected_tier: {backend_java: partial, data_scientist: weak, frontend_react: weak}
+
+contact:
+  name: Rohan Kapoor
+  email: rohan.kapoor@example.com
+  phone: "+1 (305) 555-0171"
+  location: Noida, India
+
+headline: Software Engineer
+summary: >-
+  Hard-working software engineer looking for a challenging role in a reputed
+  organisation where I can use my skills.
+
+experience:
+  - title: Software Engineer
+    company: Generic Solutions Pvt Ltd
+    location: Noida
+    start: "2023-01"
+    end: present
+    bullets:
+      - Worked on various projects for different clients.
+      - Attended daily meetings with the team.
+      - Handled tasks assigned by the manager on time.
+
+skills:
+  Skills:
+    - Java
+    - Spring Boot
+    - PostgreSQL
+    - REST APIs
+    - Microservices
+    - Docker
+    - Kafka
+    - AWS
+    - Kubernetes
+    - Python
+    - JavaScript
+    - TypeScript
+    - React
+    - Angular
+    - Vue.js
+    - Node.js
+    - Django
+    - Flask
+    - MySQL
+    - MongoDB
+    - Redis
+    - Elasticsearch
+    - Cassandra
+    - RabbitMQ
+    - Microsoft Azure
+    - Google Cloud Platform
+    - Terraform
+    - Ansible
+    - Jenkins
+    - GitHub Actions
+    - Git
+    - Linux
+    - Hibernate
+    - Spring Security
+    - GraphQL
+    - gRPC
+    - HTML
+    - CSS
+    - Go
+    - Rust
+    - C++
+    - C#
+    - .NET
+    - Scala
+    - Kotlin
+    - Machine Learning
+    - TensorFlow
+    - pandas
+    - Apache Spark
+    - Hadoop
+    - Tableau
+    - Power BI
+    - Selenium
+    - JUnit
+    - Agile
+    - Scrum
+    - CI/CD
+    - Design Patterns
+    - System Design
+    - Data Structures
+also_mentions: []
+
+education:
+  - degree: B.Tech
+    field: Computer Science
+    institution: Northern Institute of Engineering
+    year: 2022
+    level: 3

@@ -1,0 +1,60 @@
+# Persona 8 — 5 years in total but only 1.5 relevant to a backend role. MM/YYYY dates.
+id: 8
+slug: qa_to_backend
+persona: "QA automation engineer moving to backend: 5 years total, 1.5 relevant"
+tests: Relevance-weighted experience
+format: docx
+layout: one_column
+date_format: mm_yyyy
+role_style: pipe
+bullet: "-"
+present_word: Current
+date_separator: " - "
+section_titles:
+  experience: Experience
+  skills: Tech Stack
+expected_tier: {backend_java: partial, data_scientist: weak, frontend_react: weak}
+relevant_experience_months: {backend_java: 18}
+
+contact:
+  name: Vikram Rao
+  email: vikram.rao@example.com
+  phone: "+1 (737) 555-0108"
+  location: Mysuru, India
+  linkedin: linkedin.com/in/vikram-rao-example
+
+headline: Backend Developer
+summary: >-
+  Engineer with 5 years of experience: three and a half in software quality, now building backend services.
+  Strong at writing reliable, well-tested code.
+
+experience:
+  - title: Backend Developer
+    company: Initech Software
+    location: Bengaluru
+    start: "2025-06"
+    end: present
+    bullets:
+      - Build REST APIs with Java and Spring Boot for the customer billing service.
+      - Write PostgreSQL migrations and optimise slow reporting queries.
+  - title: QA Automation Engineer
+    company: Vandelay Logistics
+    location: Mysuru
+    start: "2021-12"
+    end: "2025-05"
+    bullets:
+      - Built a Selenium and TestNG regression suite of 900 tests written in Java.
+      - Automated API checks in Postman and ran them on every Jenkins build.
+      - Wrote Cucumber scenarios with product owners for the shipment tracking app.
+
+skills:
+  Tech Stack: [Java, Spring Boot, PostgreSQL, REST APIs, SQL, Selenium, TestNG, Postman, Cucumber, Jenkins, Git]
+also_mentions: [Regression Testing, Quality Assurance]
+not_skills: [Communication]  # from the degree "Electronics and Communication"
+
+education:
+  - degree: B.E.
+    field: Electronics and Communication
+    institution: Mysuru Institute of Engineering
+    year: 2021
+    level: 3

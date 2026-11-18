@@ -1,0 +1,50 @@
+# Persona 10 — roles with no dates at all; the only experience signal is "7 years" in the summary.
+id: 10
+slug: no_dates
+persona: No dates, "7 years of experience" in the summary
+tests: Fallback experience logic
+format: docx
+layout: one_column
+date_format: none
+role_style: stacked
+bullet: "•"
+section_titles:
+  summary: About Me
+  experience: Career History
+expected_tier: {backend_java: partial, data_scientist: weak, frontend_react: weak}
+stated_experience_months: 84
+
+contact:
+  name: Imran Qureshi
+  email: imran.qureshi@example.com
+  phone: "+1 (512) 555-0156"
+  location: Lucknow, India
+
+headline: Java Developer
+summary: >-
+  Backend developer with 7 years of experience building Java applications for
+  retail and logistics clients.
+
+experience:
+  - title: Software Engineer
+    company: Wayne Retail Tech
+    location: Noida
+    bullets:
+      - Develop inventory services in Java with Spring and Hibernate.
+      - Maintain MySQL databases and REST APIs for store systems.
+  - title: Java Developer
+    company: Soylent Systems
+    location: Lucknow
+    bullets:
+      - Built order management modules and wrote JUnit tests.
+      - Managed builds with Maven.
+
+skills:
+  Skills: [Java, Spring, Hibernate, MySQL, REST APIs, JUnit, Maven]
+
+education:
+  - degree: BCA
+    field: Computer Applications
+    institution: Awadh College
+    year: 2016
+    level: 3

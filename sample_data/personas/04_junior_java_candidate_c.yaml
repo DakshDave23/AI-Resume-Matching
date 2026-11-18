@@ -1,0 +1,55 @@
+# Persona 4 — "Candidate C" from design doc §6.6: 2 relevant years, no Spring Boot, no
+# microservices. The internship before it must be listed but NOT counted in total years.
+id: 4
+slug: junior_java_candidate_c
+persona: Junior Java developer, 2 years (Candidate C in design doc §6.6)
+tests: Experience shortfall; internship excluded from total years
+format: docx
+layout: one_column
+date_format: mon_yyyy
+role_style: pipe
+bullet: "•"
+docx_list_bullets: true
+expected_tier: {backend_java: partial, data_scientist: weak, frontend_react: weak}
+relevant_experience_months: {backend_java: 24}
+
+contact:
+  name: Sneha Kulkarni
+  email: sneha.kulkarni@example.com
+  phone: "+1 (646) 555-0133"
+  location: Pune, India
+  linkedin: linkedin.com/in/sneha-kulkarni-example
+
+headline: Software Engineer
+summary: >-
+  Software engineer with two years of experience writing Java services for a
+  healthcare scheduling product.
+
+experience:
+  - title: Software Engineer
+    company: Umbrella Health Tech
+    location: Pune
+    start: "2024-12"
+    end: present
+    bullets:
+      - Build RESTful APIs in Java for patient appointment booking and reminders.
+      - Write PostgreSQL queries and migrations for the scheduling database.
+      - Deploy services to AWS and monitor them with dashboards and alerts.
+  - title: Software Engineering Intern
+    company: Umbrella Health Tech
+    location: Pune
+    start: "2024-06"
+    end: "2024-11"
+    internship: true
+    bullets:
+      - Fixed bugs in the admin portal and wrote JUnit tests for the billing module.
+
+skills:
+  Technical Skills: [Java, PostgreSQL, RESTful APIs, AWS, Git, JUnit]
+
+education:
+  - degree: B.Tech
+    field: Computer Science
+    institution: Western Institute of Technology
+    year: 2024
+    level: 3

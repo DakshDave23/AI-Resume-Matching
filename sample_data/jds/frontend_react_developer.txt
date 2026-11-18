@@ -1,0 +1,26 @@
+Job Title: Frontend React Developer
+Company: Contoso Learning (synthetic)
+Location: Remote (India)
+
+We build an online learning platform used by two million students. You will join the web team that owns the student and teacher dashboards.
+
+Responsibilities
+- Build fast, accessible and responsive user interfaces for the learning platform.
+- Turn design mockups into reusable React components.
+- Integrate the frontend with REST APIs and handle loading, empty and error states.
+- Improve page load times on slow mobile networks.
+- Write tests for components and review pull requests from teammates.
+
+Requirements
+- 3+ years of experience building web applications.
+- Strong skills in JavaScript and TypeScript.
+- Proficient in React.
+- Solid knowledge of HTML and CSS.
+- Experience consuming REST APIs.
+- Bachelor's degree in Computer Science or equivalent experience.
+
+Nice to have
+- Experience with Next.js.
+- Familiarity with Redux.
+- Experience testing with Jest.
+- Knowledge of web accessibility (WCAG) is a plus.

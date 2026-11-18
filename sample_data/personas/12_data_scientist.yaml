@@ -1,0 +1,61 @@
+# Persona 12 — a good data scientist: weak for the Java JD, strong for the Data Scientist JD.
+id: 12
+slug: data_scientist
+persona: Data scientist
+tests: Low for the Java JD, high for the Data Scientist JD
+format: pdf
+layout: one_column
+date_format: mon_yyyy
+role_style: pipe
+bullet: "•"
+expected_tier: {backend_java: weak, data_scientist: strong, frontend_react: weak}
+
+contact:
+  name: Fatima Shaikh
+  email: fatima.shaikh@example.com
+  phone: "+1 (617) 555-0190"
+  location: Pune, India
+  linkedin: linkedin.com/in/fatima-shaikh-example
+  github: github.com/fatimashaikh-example
+
+headline: Data Scientist
+summary: >-
+  Data scientist with 6 years of experience in retail analytics: demand
+  forecasting, pricing experiments and recommendation models.
+
+experience:
+  - title: Data Scientist
+    company: Orion Insights
+    location: Pune
+    start: "2022-08"
+    end: present
+    bullets:
+      - Built demand forecasting models in Python with scikit-learn and XGBoost, cutting stock-outs by 18%.
+      - Designed and analysed A/B tests for pricing changes across 300 stores.
+      - Trained a TensorFlow model that classifies product reviews by topic.
+      - Process two years of transaction data with Apache Spark and share results in Tableau dashboards.
+  - title: Data Analyst
+    company: Northwind Traders
+    location: Mumbai
+    start: "2020-07"
+    end: "2022-07"
+    bullets:
+      - Wrote SQL and pandas analyses of customer churn for the marketing team.
+
+skills:
+  Programming: [Python, R, SQL]
+  Libraries: [pandas, NumPy, scikit-learn, TensorFlow, XGBoost]
+  Methods: [Statistics, Machine Learning, Natural Language Processing, A/B Testing]
+  Tools: [Apache Spark, Tableau, Jupyter]
+
+education:
+  - degree: M.Sc
+    field: Statistics
+    institution: Deccan University
+    year: 2020
+    level: 4
+  - degree: B.Sc
+    field: Mathematics
+    institution: Deccan University
+    year: 2018
+    level: 3

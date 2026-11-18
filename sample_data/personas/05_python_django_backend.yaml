@@ -1,0 +1,57 @@
+# Persona 5 — experienced backend developer in a different stack. Year-only dates.
+id: 5
+slug: python_django_backend
+persona: Python/Django backend developer, 6 years
+tests: Transferable but different stack; year-only date ranges
+format: pdf
+layout: one_column
+date_format: yyyy
+role_style: pipe
+bullet: "-"
+section_titles:
+  experience: Employment History
+expected_tier: {backend_java: partial, data_scientist: partial, frontend_react: weak}
+
+contact:
+  name: Karthik Iyer
+  email: karthik.iyer@example.com
+  phone: "+44 20 7946 0321"
+  location: Bengaluru, India
+  github: github.com/karthikiyer-example
+
+headline: Senior Backend Developer
+summary: >-
+  Backend developer with 6 years of experience building APIs and data-heavy
+  services in Python for media and analytics companies.
+
+experience:
+  - title: Senior Backend Developer
+    company: Brightline Media
+    location: Bengaluru
+    start: "2024"
+    end: present
+    bullets:
+      - Lead development of the content API in Django REST Framework serving 20 million requests a day.
+      - Moved video processing to Celery workers backed by Redis, cutting upload time by half.
+      - Designed PostgreSQL schemas and read replicas for the analytics dashboards.
+  - title: Backend Developer
+    company: Pied Piper Analytics
+    location: Bengaluru
+    start: "2021"
+    end: "2023"
+    bullets:
+      - Built Flask and Django services for customer reporting.
+      - Containerised services with Docker and deployed them to AWS.
+
+skills:
+  Languages: [Python, SQL]
+  Frameworks: [Django, Django REST Framework, Flask, Celery]
+  Data and Infrastructure: [PostgreSQL, Redis, Docker, AWS, Git]
+  APIs: [REST APIs]
+
+education:
+  - degree: B.Sc
+    field: Computer Science
+    institution: Lakeside College of Science
+    year: 2020
+    level: 3

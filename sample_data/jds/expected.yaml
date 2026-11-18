@@ -1,0 +1,38 @@
+# Hand-labelled extraction targets for the sample JDs (design doc §5.4).
+# generate_samples.py copies these into ground_truth.json after checking every skill name
+# against the taxonomy and checking that each JD mentions no other taxonomy skill.
+- id: backend_java
+  file: backend_java_developer.txt
+  title: Senior Backend Java Developer
+  seniority: senior
+  required_skills: [Java, Spring Boot, PostgreSQL, REST APIs, Microservices]
+  preferred_skills: [Docker, Kafka, AWS]
+  min_experience_years: 4
+  max_experience_years: null
+  degree_level: 3
+  fields_of_study: [Computer Science, Information Technology]
+  accepts_equivalent_experience: false
+
+- id: data_scientist
+  file: data_scientist.txt
+  title: Data Scientist
+  seniority: mid
+  required_skills: [Python, pandas, scikit-learn, SQL, Statistics, Machine Learning]
+  preferred_skills: [Deep Learning, TensorFlow, PyTorch, Apache Spark, A/B Testing, Tableau, Power BI]
+  min_experience_years: 3
+  max_experience_years: null
+  degree_level: 4
+  fields_of_study: [Statistics, Computer Science, Mathematics]
+  accepts_equivalent_experience: false
+
+- id: frontend_react
+  file: frontend_react_developer.txt
+  title: Frontend React Developer
+  seniority: mid
+  required_skills: [JavaScript, TypeScript, React, HTML, CSS, REST APIs]
+  preferred_skills: [Next.js, Redux, Jest, Web Accessibility]
+  min_experience_years: 3
+  max_experience_years: null
+  degree_level: 3
+  fields_of_study: [Computer Science]
+  accepts_equivalent_experience: true

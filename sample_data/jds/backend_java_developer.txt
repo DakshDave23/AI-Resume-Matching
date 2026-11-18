@@ -1,0 +1,31 @@
+Job Title: Senior Backend Java Developer
+Company: Northwind Payments (synthetic)
+Location: Bengaluru, India (Hybrid)
+
+About the role
+Northwind Payments processes millions of card and UPI transactions a day. We are looking for a Senior Backend Java Developer to design and build the services behind our payments platform.
+
+Responsibilities
+- Design and build scalable backend services that process high volumes of payment transactions.
+- Develop and maintain REST APIs consumed by web, mobile and partner applications.
+- Break down and evolve our microservices architecture, owning services end to end.
+- Write efficient queries and tune database schemas for performance.
+- Write automated tests and review pull requests from teammates.
+- Work with product managers and other engineers to plan and ship features.
+- Monitor services in production and help resolve incidents.
+
+Requirements
+- 4+ years of professional experience in backend software development.
+- Strong proficiency in Java and Spring Boot.
+- Hands-on experience with PostgreSQL.
+- Experience designing and building REST APIs.
+- Solid understanding of Microservices architecture.
+- Bachelor's degree in Computer Science, Information Technology or a related field.
+
+Nice to have
+- Experience with Docker.
+- Familiarity with Kafka or other event streaming platforms.
+- Exposure to AWS is a plus.
+
+What we offer
+Competitive salary, flexible working hours, learning budget and health insurance for you and your family.

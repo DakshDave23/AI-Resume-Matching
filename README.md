@@ -92,6 +92,7 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 | `make db-shell` | `docker compose exec db psql -U resume -d resume_matcher` |
 | `make migrate` | `cd backend && alembic upgrade head` |
 | `make seed` | `backend/.venv/Scripts/python scripts/seed_skills.py` |
+| `make samples` | `backend/.venv/Scripts/python scripts/generate_samples.py` |
 | `make install` | see the backend steps below |
 | `make dev` | `cd backend && uvicorn app.main:app --reload` |
 | `make check` | lint + type-check + tests (see below) |
@@ -126,6 +127,27 @@ Lint, type-check and test:
 ```bash
 ruff check . && ruff format --check . && mypy app tests && pytest
 ```
+
+## Sample data
+
+Everything in [`sample_data/`](sample_data/) is synthetic: invented people and companies, `example.com` emails, and phone numbers from ranges reserved for fiction.
+
+| Path | What it is |
+| --- | --- |
+| `jds/*.txt` | Three job descriptions: Backend Java Developer (the main demo), Data Scientist, Frontend React Developer |
+| `jds/expected.yaml` | What a perfect JD parser would extract from each |
+| `personas/NN_*.yaml` | 15 hand-written resume personas, each built to test one thing (aliases, two-column layout, overlapping jobs, keyword stuffing, a scanned PDF, ...) |
+| `resumes/` | The personas rendered to PDF and DOCX in one-column, two-column, table and scanned layouts |
+| `ground_truth.json` | Expected name, contact, skills, roles, total months, degree level and ranking tier per resume |
+
+The personas are the source; the resumes and ground truth are generated from them:
+
+```bash
+backend/.venv/Scripts/python scripts/generate_samples.py --check   # validate personas only
+backend/.venv/Scripts/python scripts/generate_samples.py           # re-render (deterministic)
+```
+
+The generator refuses to write anything if the ground truth would be incomplete. For example, if a resume mentions a taxonomy skill that its persona doesn't list, it stops with an error.
 
 ## How matching works
 
