@@ -62,6 +62,7 @@ def make_api_app(session: Session, loader: ModelLoader | None = None) -> FastAPI
 
     app.dependency_overrides[get_db] = request_session
     app.state.model_loader = loader or ModelLoader(FakeEncoder)
+    app.state.resume_unfinished_batches = False
     return app
 
 

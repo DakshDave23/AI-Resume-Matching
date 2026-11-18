@@ -23,6 +23,7 @@ def app() -> FastAPI:
     app = create_app()
     app.dependency_overrides[get_database_status] = lambda: HEALTHY_DB
     app.state.model_loader = ModelLoader(FakeEncoder)
+    app.state.resume_unfinished_batches = False
     return app
 
 

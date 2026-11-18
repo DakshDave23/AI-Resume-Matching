@@ -35,6 +35,7 @@ def test_vector_extension_is_enabled_and_works() -> None:
 def test_health_reports_real_database_ready() -> None:
     app = create_app()
     app.state.model_loader = ModelLoader(FakeEncoder)  # this test is about the database
+    app.state.resume_unfinished_batches = False
     with TestClient(app) as client:
         app.state.model_loader.wait(timeout=5)
         response = client.get("/api/v1/health")

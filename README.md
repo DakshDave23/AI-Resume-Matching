@@ -297,6 +297,9 @@ REST under `/api/v1`. Swagger UI at http://localhost:8000/docs lists every route
 | GET | `/jobs` | List jobs, newest first, with resume count and top score (`limit`, `offset`) |
 | GET | `/jobs/{job_id}` | One job: extracted skills (required/preferred, weight, min years, source phrase), requirement sentences, years, degree, fields |
 | PATCH | `/jobs/{job_id}/requirements` | Recruiter edits; marks existing scores stale |
+| POST | `/jobs/{job_id}/resumes` | Upload 1–50 PDF/DOCX resumes; 202 with the batch id, accepted files and rejected files with reasons |
+
+**Resume uploads.** Each file is checked on arrival: size, real type (magic bytes, not the extension) and duplicates within the upload. A bad file is listed under `rejected` with a reason, and the rest go ahead. Accepted files are stored as `<uuid>.<ext>` under `UPLOAD_DIR`; the recruiter's file name is kept for display only. A background task then parses each one (extract → parse → chunk → embed → save) in its own transaction, so a failure marks only that file `failed`, with a reason such as "Looks like a scanned image; OCR is not enabled." The 15 samples finish in about 2 seconds on a laptop CPU. If the server stops mid-batch (a crash, or `--reload`), it finishes the remaining files when it starts again.
 
 `PATCH /requirements` changes only the fields sent. `skills` replaces the whole chip list. Each chip names a skill by `skill_id`, or by `name` (canonical or alias: `k8s` finds Kubernetes). An unknown name adds a custom skill. Chips the recruiter changed are saved with `added_by: "recruiter"`.
 
@@ -304,6 +307,7 @@ Every error has the same shape: `{"error": {"code": "...", "message": "...", "de
 
 | Status | When |
 | --- | --- |
+| 202 | Upload accepted; parsing continues in the background |
 | 400 | Empty file |
 | 404 | No such job |
 | 413 | File over the upload limit |
