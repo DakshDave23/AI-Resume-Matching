@@ -1,4 +1,4 @@
-"""Show what the parser gets from a resume: contact details, then its sections.
+"""Show what the parser gets from a resume: contact details, skills, then sections.
 
 python -m app.services.parsing ../sample_data/resumes/02_java_aliases.docx
 """
@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.services.extraction import ExtractionError, extract_text, validate_file
 from app.services.parsing.contact import extract_contact
 from app.services.parsing.sections import CONTACT, segment
+from app.services.parsing.skills import get_skill_extractor
 
 
 def main(argv: list[str]) -> int:
@@ -33,6 +34,14 @@ def main(argv: list[str]) -> int:
     print(f"--- {path.name} ---")
     for field, value in asdict(contact).items():
         print(f"{field:>13}: {value if value is not None else '-'}")
+
+    skills = get_skill_extractor().extract_resume(segmentation)
+    print(f"\n--- {len(skills.skills)} skills ---")
+    for skill in skills.skills:
+        sources = ", ".join(s.value for s in skill.sources)
+        print(f"{skill.name:<28} x{skill.mention_count}  [{sources}]  {skill.evidence}")
+    if skills.unmapped:
+        print(f"unmapped: {', '.join(skills.unmapped)}")
 
     print(f"\n--- sections: {', '.join(segmentation.names())} ---")
     for section in segmentation.sections:

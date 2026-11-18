@@ -23,6 +23,7 @@ dependencies = [
     "python-docx==1.2.0",  # DOCX text extraction (step 8); also renders the sample DOCX files
     "rapidfuzz==3.14.6",  # fuzzy section headers (step 9) and skill variants
     "phonenumbers==9.0.43",  # phone validation and E.164 normalisation (step 10)
+    "spacy==3.8.18",  # tokenizer + PhraseMatcher for skills (step 11); no model download needed
 ]
 
 [project.optional-dependencies]
@@ -81,7 +82,9 @@ exclude = ["alembic/"]
 untyped_calls_exclude = ["pymupdf", "docx"]
 
 [[tool.mypy.overrides]]
-module = ["lxml.*"]  # only used for its XMLSyntaxError (python-docx's parser)
+# lxml: only used for its XMLSyntaxError (python-docx's parser).
+# spacy.tokenizer: a compiled (Cython) module that ships no type stub.
+module = ["lxml.*", "spacy.tokenizer"]
 ignore_missing_imports = true
 
 # --- pytest ----------------------------------------------------------------

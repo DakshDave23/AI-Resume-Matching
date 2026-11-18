@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "skills": [
     {"name": "Java", "category": "language", "aliases": ["core java", "java se", "java 8", "java 11", "java 17", "java 21"]},
     {"name": "Python", "category": "language", "aliases": ["python3", "python 3"]},
@@ -342,7 +342,7 @@
     {"name": "Appium", "category": "testing", "aliases": []},
     {"name": "Test Automation", "category": "testing", "aliases": ["automation testing", "automated testing"]},
     {"name": "Manual Testing", "category": "testing", "aliases": []},
-    {"name": "Regression Testing", "category": "testing", "aliases": []},
+    {"name": "Regression Testing", "category": "testing", "aliases": ["regression test", "regression suite"]},
     {"name": "Performance Testing", "category": "testing", "aliases": ["load testing", "stress testing"]},
     {"name": "API Testing", "category": "testing", "aliases": []},
     {"name": "Quality Assurance", "category": "testing", "aliases": ["qa", "software testing"]},
