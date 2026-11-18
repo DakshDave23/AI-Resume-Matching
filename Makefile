@@ -12,6 +12,7 @@ ifeq ($(OS),Windows_NT)
   PYTEST  := $(VENV)\pytest
   RUFF    := $(VENV)\ruff
   MYPY    := $(VENV)\mypy
+  ALEMBIC := $(VENV)\alembic
   LIST_TARGETS := findstr /R /C:"^[a-z-]*:.*\#\# " Makefile
 else
   PYTHON  := python3.12
@@ -21,6 +22,7 @@ else
   PYTEST  := $(VENV)/pytest
   RUFF    := $(VENV)/ruff
   MYPY    := $(VENV)/mypy
+  ALEMBIC := $(VENV)/alembic
   LIST_TARGETS := grep -E '^[a-z-]+:.*\#\# ' Makefile | awk 'BEGIN {FS = ":.*\#\# "}; {printf "  %-10s %s\n", $$1, $$2}'
 endif
 
@@ -29,7 +31,7 @@ DB_USER ?= resume
 DB_NAME ?= resume_matcher
 
 .DEFAULT_GOAL := help
-.PHONY: help db-up db-down db-reset db-logs db-shell install dev test lint format typecheck check
+.PHONY: help db-up db-down db-reset db-logs db-shell migrate install dev test lint format typecheck check
 
 help:  ## List targets
 	@$(LIST_TARGETS)
@@ -50,6 +52,9 @@ db-logs:  ## Follow Postgres logs
 
 db-shell:  ## Open psql inside the database container
 	$(COMPOSE) exec db psql -U $(DB_USER) -d $(DB_NAME)
+
+migrate:  ## Apply all database migrations
+	cd backend && $(ALEMBIC) upgrade head
 
 # --- Backend ----------------------------------------------------------------
 install:  ## Create the backend venv and install dependencies

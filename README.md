@@ -90,6 +90,7 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 | `make db-down` | `docker compose down` |
 | `make db-reset` | `docker compose down -v` then `make db-up` |
 | `make db-shell` | `docker compose exec db psql -U resume -d resume_matcher` |
+| `make migrate` | `cd backend && alembic upgrade head` |
 | `make install` | see the backend steps below |
 | `make dev` | `cd backend && uvicorn app.main:app --reload` |
 | `make check` | lint + type-check + tests (see below) |
@@ -101,7 +102,17 @@ cd backend
 py -3.12 -m venv .venv                 # macOS/Linux: python3.12 -m venv .venv
 .venv\Scripts\activate                 # macOS/Linux: source .venv/bin/activate
 pip install -e ".[dev]"
+alembic upgrade head                   # create/upgrade the database schema
 uvicorn app.main:app --reload          # http://localhost:8000/docs
+```
+
+Migrations live in `backend/alembic/versions/` and are numbered (`0001_...`). To add one after changing a model:
+
+```bash
+alembic revision --autogenerate --rev-id 0002 -m "what changed"
+# review the generated file by hand, then:
+alembic upgrade head
+alembic check                          # "No new upgrade operations detected." = models and DB agree
 ```
 
 Health check: `GET http://localhost:8000/api/v1/health` returns 200 with `"database": "ok"` when Postgres is up, or 503 when it isn't.

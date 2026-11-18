@@ -34,7 +34,8 @@ class Settings(BaseSettings):
 
     # --- Database --------------------------------------------------------
     # Local-development default matching docker-compose; override in .env.
-    database_url: str = "postgresql+psycopg://resume:resume@localhost:5432/resume_matcher"
+    # 127.0.0.1 rather than localhost: see the note in .env.example.
+    database_url: str = "postgresql+psycopg://resume:resume@127.0.0.1:5432/resume_matcher"
 
     # --- Uploads ---------------------------------------------------------
     upload_dir: Path = Path("./storage/uploads")
