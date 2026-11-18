@@ -287,7 +287,29 @@ _TODO: Mermaid ER diagram._
 
 ## API
 
-_TODO._ Swagger UI is served at `/docs` once the backend is running.
+REST under `/api/v1`. Swagger UI at http://localhost:8000/docs lists every route with its request and response shapes, so it doubles as a demo.
+
+| Method | Path | What it does |
+| --- | --- | --- |
+| GET | `/health` | Database, pgvector and embedding-model readiness; 503 until all are ready |
+| POST | `/jobs` | Create a job from pasted JD text (`{"text": ..., "title": optional}`) |
+| POST | `/jobs/upload` | Create a job from a PDF, DOCX or TXT file |
+| GET | `/jobs` | List jobs, newest first, with resume count and top score (`limit`, `offset`) |
+| GET | `/jobs/{job_id}` | One job: extracted skills (required/preferred, weight, min years, source phrase), requirement sentences, years, degree, fields |
+| PATCH | `/jobs/{job_id}/requirements` | Recruiter edits; marks existing scores stale |
+
+`PATCH /requirements` changes only the fields sent. `skills` replaces the whole chip list. Each chip names a skill by `skill_id`, or by `name` (canonical or alias: `k8s` finds Kubernetes). An unknown name adds a custom skill. Chips the recruiter changed are saved with `added_by: "recruiter"`.
+
+Every error has the same shape: `{"error": {"code": "...", "message": "...", "details": ...}}`.
+
+| Status | When |
+| --- | --- |
+| 400 | Empty file |
+| 404 | No such job |
+| 413 | File over the upload limit |
+| 415 | Not a PDF, DOCX or TXT |
+| 422 | Invalid body, scanned or corrupt file, unknown skill id, duplicate skill, max years below min |
+| 503 | `model_loading` |
 
 ## Results
 

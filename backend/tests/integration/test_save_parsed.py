@@ -27,9 +27,8 @@ from app.models import (
 from app.models.enums import FileType, JobStatus, ParseStatus, RequirementType
 from app.repositories.jobs import save_parsed_job
 from app.repositories.resumes import mark_failed, save_parsed_resume
-from app.repositories.skills import SkillsNotSeededError, skill_ids, upsert_taxonomy
+from app.repositories.skills import SkillsNotSeededError, skill_ids
 from app.services.extraction import ExtractionError
-from app.services.nlp.taxonomy import get_taxonomy
 from app.services.nlp.vectors import embed_job, embed_resume
 from app.services.parsing.chunker import chunk_resume
 from app.services.parsing.jd_parser import parse_job
@@ -42,10 +41,8 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.fixture
-def seeded(db_session: Session) -> Session:
-    """The taxonomy, inside the test's transaction: a fresh CI database has none."""
-    upsert_taxonomy(db_session, get_taxonomy())
-    return db_session
+def seeded(seeded_session: Session) -> Session:
+    return seeded_session
 
 
 def save_job(session: Session, encoder: FakeEncoder) -> Job:

@@ -9,8 +9,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.dml import ReturningInsert
 
 from app.models import Skill
+from app.models.enums import SkillCategory
 from app.services.nlp.embedder import TextEncoder
-from app.services.nlp.taxonomy import Taxonomy
+from app.services.nlp.taxonomy import Taxonomy, normalize_term
 
 
 @dataclass(frozen=True)
@@ -133,3 +134,41 @@ def skill_ids(session: Session, names: Iterable[str]) -> dict[str, int]:
     if missing := sorted(wanted - found.keys()):
         raise SkillsNotSeededError(missing)
     return found
+
+
+def find_skill(session: Session, name: str) -> Skill | None:
+    """A skill by canonical name or alias, ignoring case: "k8s" finds Kubernetes."""
+    key = normalize_term(name)
+    by_name = session.scalars(select(Skill).where(func.lower(Skill.canonical_name) == key)).first()
+    if by_name is not None:
+        return by_name
+    # `aliases @> ARRAY[key]` can use the GIN index on aliases.
+    return session.scalars(
+        select(Skill).where(Skill.aliases.contains([key])).order_by(Skill.id)
+    ).first()
+
+
+def add_custom_skill(
+    session: Session, name: str, category: SkillCategory, encoder: TextEncoder
+) -> Skill:
+    """A recruiter's skill that the taxonomy lacks ("Add to taxonomy"), with its vector.
+
+    Safe if two requests add the same name at once: the second finds the first's row.
+    """
+    vector = encoder.encode([skill_embedding_text(name, category.value)])[0]
+    statement = (
+        insert(Skill)
+        .values(
+            canonical_name=name,
+            category=category.value,
+            aliases=[],
+            is_custom=True,
+            embedding=vector.tolist(),
+        )
+        .on_conflict_do_nothing(index_elements=[func.lower(Skill.canonical_name)])
+    )
+    session.execute(statement)
+    skill = find_skill(session, name)
+    if skill is None:  # pragma: no cover - the row was just inserted or already there
+        raise RuntimeError(f"custom skill {name!r} was not saved")
+    return skill

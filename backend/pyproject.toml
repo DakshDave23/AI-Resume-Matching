@@ -12,6 +12,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi==0.163.2",
     "uvicorn[standard]==0.54.0",
+    "python-multipart==0.0.34",  # file uploads (step 19)
     "pydantic==2.14.3",
     "pydantic-settings==2.16.3",
     "sqlalchemy==2.1.9",
