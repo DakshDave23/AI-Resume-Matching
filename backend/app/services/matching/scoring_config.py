@@ -89,3 +89,43 @@ PARTIAL_MIN_COSINE: Final = 0.30
 RELEVANT_ROLE_MIN_COSINE: Final = 0.55  # -> factor 1.0
 PARTLY_RELEVANT_ROLE_MIN_COSINE: Final = 0.42  # -> factor 0.5
 PARTLY_RELEVANT_FACTOR: Final = 0.5
+
+# --- Education (§6.5) ---------------------------------------------------------------
+
+DEGREE_MEETS: Final = 1.0  # the candidate's level is equal or higher
+DEGREE_ONE_BELOW: Final = 0.5
+# Two or more below, or no degree found: not 0, since the parser may have missed it.
+DEGREE_FAR_BELOW: Final = 0.2
+FIELD_MISMATCH_FACTOR: Final = 0.8  # the JD names fields and the candidate's is another
+
+# Fields count as the same when they share a group below, or their names' cosine is
+# >= 0.6. The doc's 0.6 holds for all-MiniLM-L6-v2 (2026-11-19): unrelated pairs top
+# out at 0.54 (Computer Science / Mathematics); Computer Engineering scores 0.84 and
+# Data Science 0.72 against Computer Science. Related pairs the model scores lower are
+# listed: Computer Science / Information Technology 0.57, / Computer Applications 0.59,
+# / Information Systems 0.51; Electronics and Communication / Electrical Engineering 0.55.
+FIELD_MIN_COSINE: Final = 0.6
+EQUIVALENT_FIELDS: Final[tuple[frozenset[str], ...]] = tuple(
+    frozenset(f.lower() for f in group)
+    for group in [
+        (
+            "Computer Science", "Computer Science and Engineering", "Computer Engineering",
+            "Information Technology", "Information Systems", "Software Engineering",
+            "Computer Applications",
+        ),
+        (
+            "Electronics", "Electronics and Communication", "Electronics and Telecommunication",
+            "Electrical Engineering", "Electrical and Electronics Engineering", "Instrumentation",
+        ),
+        ("Mathematics", "Applied Mathematics", "Statistics"),
+        (
+            "Commerce", "Accounting", "Accountancy", "Finance", "Business Administration",
+            "Management",
+        ),
+    ]
+)  # fmt: skip
+
+# "Bachelor's or equivalent experience": education counts half, and enough relevant
+# experience (the JD's minimum + 2 years) stands in for the degree.
+EQUIVALENT_EXPERIENCE_WEIGHT_FACTOR: Final = 0.5
+EQUIVALENT_EXPERIENCE_EXTRA_YEARS: Final = 2.0

@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import (
+    Education,
     Job,
     JobRequirement,
     JobSkill,
@@ -19,6 +20,7 @@ from app.models import (
     WorkExperience,
 )
 from app.repositories.skills import skill_embedding_text
+from app.services.matching.education import DegreeInput
 from app.services.matching.experience import RoleInput
 from app.services.matching.semantic import RequirementInput
 from app.services.matching.skills import CandidateSkillInput, JobSkillInput, Passage
@@ -40,6 +42,7 @@ class CandidateData:
     roles: list[RoleInput]
     total_months: int | None
     stated_months: int | None  # the total a resume without dates states in its summary
+    degrees: list[DegreeInput]
 
 
 def _vector(value: object) -> Vector | None:
@@ -144,6 +147,12 @@ def load_candidate(session: Session, resume_id: uuid.UUID) -> CandidateData:
         roles=roles,
         total_months=resume.total_experience_months,
         stated_months=resume.total_experience_months if stated else None,
+        degrees=[
+            DegreeInput(e.degree_raw, e.degree_level, e.field_of_study)
+            for e in session.scalars(
+                select(Education).where(Education.resume_id == resume_id).order_by(Education.id)
+            )
+        ],
     )
 
 
@@ -223,4 +232,11 @@ def roles_from_parse(
             vector=vector,
         )
         for role, vector in zip(parsed.work.roles, role_vectors, strict=True)
+    ]
+
+
+def degrees_from_parse(parsed: ParsedResume) -> list[DegreeInput]:
+    return [
+        DegreeInput(e.degree, int(e.level) if e.level is not None else None, e.field)
+        for e in parsed.education.entries
     ]

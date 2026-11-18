@@ -324,6 +324,20 @@ Total years can mislead: a QA engineer with 5 years who moved to backend 18 mont
 
 Against the Java JD, every figure in the ground truth comes out exactly: sample 8 has 1.5 relevant years (its QA role scores 0.39), Candidate A 4.5 (support role 0.34), sample 4 2.0 (internship excluded). The design doc's partial cut-off of 0.40 would have sat 0.01 above the QA role, so it is 0.42.
 
+### Education
+
+| Highest degree vs the JD's | Score |
+| --- | --- |
+| Equal or higher | 1.0 |
+| One level below | 0.5 |
+| Two or more below, or none found | 0.2: not 0, since the parser may have missed it |
+
+- **Field of study:** when the JD names fields and none of the candidate's degrees is in one of them, the score is multiplied by 0.8. "Same field" means an equivalence group (Computer Science ≈ IT ≈ Computer Engineering ≈ Computer Applications …; Electronics ≈ Electrical; Mathematics ≈ Statistics; Commerce ≈ Accounting ≈ Finance), or names with cosine ≥ 0.6. A degree with no field written is not penalised.
+- **"Or equivalent experience"** in the JD halves education's weight, and relevant years ≥ the JD's minimum + 2 stand in for the degree.
+- A JD that names no degree leaves this component out.
+
+Against the Java JD (a Bachelor's in CS or IT), sample 11's Diploma in Computer Engineering scores 0.5. Samples 8 (Electronics), 12 (Statistics) and 13 (Accounting) meet the level but not the field: 0.8.
+
 _TODO: link to `docs/matching-algorithm.md`._
 
 ## Database

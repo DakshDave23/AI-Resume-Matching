@@ -12,6 +12,7 @@ from app.models.enums import FileType, RequirementType, SkillAddedBy, SkillCateg
 from app.repositories.jobs import save_parsed_job
 from app.repositories.resumes import save_parsed_resume
 from app.repositories.skills import add_custom_skill, fill_skill_embeddings
+from app.services.matching.education import DegreeInput, education_score
 from app.services.matching.experience import experience_score
 from app.services.matching.inputs import load_candidate, load_job_skills, load_requirements
 from app.services.matching.semantic import semantic_score
@@ -164,3 +165,16 @@ def test_roles_load_with_dates_and_vectors(stored: tuple[Session, uuid.UUID, uui
     assert profile is not None
     result = experience_score(profile, candidate.roles, today=AS_OF, min_years=4)
     assert result.relevant_months >= 54  # the first role compared with itself: relevant
+
+
+def test_degrees_load_for_the_education_score(
+    stored: tuple[Session, uuid.UUID, uuid.UUID],
+) -> None:
+    session, _, resume_id = stored
+    degrees = load_candidate(session, resume_id).degrees
+
+    assert degrees == [DegreeInput("B.Tech", 3, "Computer Science")]
+    result = education_score(
+        degrees, required_level=3, required_fields=["Computer Science", "Information Technology"]
+    )
+    assert result.score == 1.0
