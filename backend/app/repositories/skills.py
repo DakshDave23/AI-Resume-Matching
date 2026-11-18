@@ -1,5 +1,6 @@
 """Database reads and writes for the skills taxonomy."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from sqlalchemy import case, func, literal_column, null, or_, select
@@ -107,3 +108,28 @@ def fill_skill_embeddings(
 
 def count_skills_without_embedding(session: Session) -> int:
     return session.scalar(select(func.count()).where(Skill.embedding.is_(None))) or 0
+
+
+class SkillsNotSeededError(RuntimeError):
+    """The parser found skills the skills table doesn't have: the seed script hasn't run."""
+
+    def __init__(self, missing: list[str]) -> None:
+        super().__init__(
+            f"{len(missing)} skill(s) missing from the skills table ({', '.join(missing[:5])}"
+            f"{', ...' if len(missing) > 5 else ''}); run scripts/seed_skills.py"
+        )
+        self.missing = missing
+
+
+def skill_ids(session: Session, names: Iterable[str]) -> dict[str, int]:
+    """Canonical name -> skills.id, for names the extractor produced from the taxonomy file."""
+    wanted = set(names)
+    if not wanted:
+        return {}
+    rows = session.execute(
+        select(Skill.canonical_name, Skill.id).where(Skill.canonical_name.in_(wanted))
+    ).all()
+    found = {name: skill_id for name, skill_id in rows}
+    if missing := sorted(wanted - found.keys()):
+        raise SkillsNotSeededError(missing)
+    return found

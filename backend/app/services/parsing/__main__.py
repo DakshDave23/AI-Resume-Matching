@@ -1,4 +1,4 @@
-"""Show what the parser gets from a resume (contact, work, education, skills, sections)
+"""Show what the parser gets from a resume (contact, work, education, skills, chunks, sections)
 or, with --jd, from a job description (title, skills, years, degree, requirements).
 
 python -m app.services.parsing ../sample_data/resumes/02_java_aliases.docx
@@ -13,6 +13,7 @@ from pathlib import Path
 from app.core.config import get_settings
 from app.models.enums import RequirementType
 from app.services.extraction import JD_KINDS, ExtractionError, extract_text, validate_file
+from app.services.parsing.chunker import chunk_resume
 from app.services.parsing.jd_parser import parse_job
 from app.services.parsing.resume_parser import parse_resume
 
@@ -105,6 +106,12 @@ def show_resume(name: str, text: str) -> None:
         print(f"{skill.name:<28} x{skill.mention_count} {used_for}  [{sources}]  {skill.evidence}")
     if skills.unmapped:
         print(f"unmapped: {', '.join(skills.unmapped)}")
+
+    chunks = chunk_resume(parsed.sections, parsed.work)
+    print(f"\n--- {len(chunks)} chunks (what gets embedded) ---")
+    for index, chunk in enumerate(chunks):
+        print(f"\n[{index}: {chunk.section}, {chunk.words} words]")
+        print(chunk.text)
 
     print(f"\n--- sections: {', '.join(parsed.sections.names())} ---")
     for section in parsed.sections.sections:

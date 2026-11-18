@@ -246,6 +246,21 @@ A JD (pasted text, TXT, PDF or DOCX) is read with the same section engine, skill
 - **Education:** the required level is the lowest one a required clause accepts ("BS/MS in CS" → bachelor's; "Master's preferred" is not required). Fields come from "in Statistics, Computer Science, Mathematics or a related field". "Or equivalent experience" marks education as soft.
 - **Requirement rows:** every bullet (or prose sentence) under Responsibilities, Requirements and Preferred, tagged responsibility, experience, education, skill or other.
 
+## Chunks and vectors
+
+After parsing, each document is embedded in one batched call and stored in pgvector:
+
+| What | Vector of | Used for |
+| --- | --- | --- |
+| `resume_chunks` | Each role (title, company and its bullets), each project, the summary; at most 120 words, cut between bullets | Requirement coverage and evidence |
+| `work_experiences.embedding` | Role title + description | Role relevance (§6.4) |
+| `resumes.embedding` | Normalised mean of the resume's chunk vectors | Whole-document similarity |
+| `job_requirements.embedding` | Each JD bullet or sentence | Requirement coverage |
+| `jobs.embedding` | Normalised mean of the requirement vectors | Whole-document similarity |
+| `skills.embedding` | "Name (category)", e.g. "Kafka (messaging)" | Related-skill credit |
+
+The skills section is not chunked: a bare list of names would let keyword stuffing pass for described experience. A whole role matches requirements as well as its best single bullet (0.46 vs 0.43 for "Microservices" on sample 3), so roles are kept whole.
+
 ## Trying the parsers
 
 To see what the parser gets from a resume (contact details, work history, education, skills, then sections) or a JD (title, skills, years, degree, requirement rows):
