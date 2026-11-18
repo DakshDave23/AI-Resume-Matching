@@ -1,0 +1,11 @@
+# Normalise line endings in the repo; keep LF for files that run inside Linux containers.
+* text=auto eol=lf
+
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
+
+# Binary sample files
+*.pdf  binary
+*.docx binary
+*.png  binary
+*.jpg  binary
