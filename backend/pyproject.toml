@@ -22,6 +22,7 @@ dependencies = [
     "pymupdf==2.1",  # PDF text extraction (step 8); also renders the sample PDFs
     "python-docx==1.2.0",  # DOCX text extraction (step 8); also renders the sample DOCX files
     "rapidfuzz==3.14.6",  # fuzzy section headers (step 9) and skill variants
+    "phonenumbers==9.0.43",  # phone validation and E.164 normalisation (step 10)
 ]
 
 [project.optional-dependencies]

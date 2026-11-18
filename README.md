@@ -168,7 +168,19 @@ python -m app.services.extraction ../sample_data/resumes/03_candidate_a_two_colu
 
 Resume text is split into contact, summary, experience, skills, projects, education and certifications. A line is a section header when it has 5 words or fewer, no sentence punctuation or digits, starts with a capital letter, and fuzzy-matches (rapidfuzz) one of ~90 known headers: `Tech Stack`, `Career History`, `About Me`, `ACADEMIC QUALIFICATIONS:` and so on. Typos still match ("Work Experiance"). A line in ALL CAPS or ending in a colon needs a fuzzy score of 85; any other line needs 90. Text before the first header is the contact block. Recognised but unused sections (Hobbies, Languages, References) are kept as `other`, so their text doesn't leak into the section above them.
 
-To see how a resume is split:
+## Contact details
+
+| Field | How it is found |
+| --- | --- |
+| Email | Pattern match in the contact block, then anywhere (some templates use the footer) |
+| Phone | `phonenumbers` finds valid numbers only and normalises them to E.164. Numbers without a country code use `PHONE_DEFAULT_REGION` (default `IN`). |
+| LinkedIn / GitHub | URL patterns, normalised to `https://linkedin.com/in/<id>` and `https://github.com/<user>` |
+| Name | The first piece of a contact line with 2–4 capitalised words and no digits, `@` or job-title words (`Meera Pillai — Full Stack Developer` → `Meera Pillai`). A `Name:` label wins. |
+| Location | A piece of a contact line shaped like a place (`Pune, India`, `Austin, TX 78701`), or a `Location:` label |
+
+Name and location use the layout of the contact lines rather than named-entity recognition. On these short, list-like blocks spaCy's small English model missed 2 of the 14 sample names and 3 of the 14 locations; these rules get all 14 right.
+
+To see what the parser gets from a resume (contact details, then sections):
 
 ```bash
 cd backend
