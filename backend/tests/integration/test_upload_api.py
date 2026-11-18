@@ -1,4 +1,7 @@
-"""Step 20's "done when": 15 files accepted, 14 parsed, 1 failed with a reason.
+"""Steps 20 and 21: upload a batch, parse it in the background, report its progress.
+
+Step 20's "done when": 15 files accepted, 14 parsed, 1 failed with a reason.
+Step 21's: the batch's counts and per-file statuses are correct.
 
 The real API and the real database, inside a rolled-back transaction; files go to a
 temporary folder and the fake encoder stands in for the model. TestClient runs the
@@ -9,13 +12,15 @@ import threading
 import uuid
 from collections.abc import Iterator, Sequence
 from contextlib import nullcontext
+from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select
+from sqlalchemy import event, func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_file_store, get_session_factory
@@ -250,7 +255,8 @@ def queued_batch(session: Session, store: FileStore, names: list[str]) -> tuple[
         sha = uuid.uuid4().hex * 2
         files.append(StoredFile(name, store.save(data, kind.value), kind, len(data), sha))
     batch, resumes = create_batch(session, job.id, files)
-    session.flush()
+    # Committed (to a savepoint): each API request discards whatever is uncommitted.
+    session.commit()
     return batch.id, resumes
 
 
@@ -307,7 +313,7 @@ def test_batches_interrupted_by_a_restart_are_finished(
         seeded_session, store, ["01_senior_java_engineer.pdf", "02_java_aliases.docx"]
     )
     resumes[0].parse_status = ParseStatus.PARSING  # the server died while parsing this one
-    seeded_session.flush()
+    seeded_session.commit()
 
     assert pipeline(seeded_session, store).resume_unfinished() >= 1
 
@@ -327,3 +333,114 @@ def test_running_a_finished_batch_again_changes_nothing(
     batch = seeded_session.get(UploadBatch, batch_id)
     assert batch is not None
     assert (batch.processed_files, batch.failed_files) == (1, 0)  # not counted twice
+
+
+# --- Batch progress (step 21) ---------------------------------------------------------
+
+
+def batch_status(client: TestClient, batch_id: uuid.UUID | str) -> dict[str, Any]:
+    response = client.get(f"/api/v1/batches/{batch_id}")
+    assert response.status_code == 200, response.text
+    assert response.headers["cache-control"] == "no-store"
+    body: dict[str, Any] = response.json()
+    return body
+
+
+def test_batch_counts_and_file_statuses_are_correct(client: TestClient) -> None:
+    """Step 21's "done when", on the 15 samples."""
+    batch_id = upload(client, new_job(client), sample_files()).json()["batch_id"]
+
+    progress = batch_status(client, batch_id)
+
+    counts = {k: progress[k] for k in ("status", "total_files", "processed_files", "failed_files")}
+    assert counts == {
+        "status": "completed_with_errors",
+        "total_files": 15,
+        "processed_files": 14,
+        "failed_files": 1,
+    }
+    assert progress["pending_files"] == 0 and progress["completed_at"] is not None
+    files = progress["files"]
+    assert [f["filename"] for f in files] == sorted(n for n, _ in sample_files())
+    by_name = {f["filename"]: f for f in files}
+    scanned = by_name.pop("15_scanned_pdf.pdf")
+    assert (scanned["parse_status"], scanned["parse_error"], scanned["candidate_name"]) == (
+        "failed",
+        SCANNED_REASON,
+        None,
+    )
+    expected_names = {r["file"].rsplit("/", 1)[-1]: r["name"] for r in GROUND_TRUTH["resumes"]}
+    for name, f in by_name.items():
+        assert (f["parse_status"], f["parse_error"], f["needs_review"]) == ("parsed", None, False)
+        assert f["candidate_name"] == expected_names[name]
+    assert by_name["10_no_dates.docx"]["parse_confidence"] == 0.83  # no dated role
+    assert sum(f["parse_status"] == "parsed" for f in files) == progress["processed_files"]
+
+
+def test_progress_while_a_batch_is_parsing(
+    client: TestClient, seeded_session: Session, store: FileStore
+) -> None:
+    batch_id, resumes = queued_batch(
+        seeded_session, store, ["01_senior_java_engineer.pdf", "02_java_aliases.docx"]
+    )
+
+    queued = batch_status(client, batch_id)
+    assert (queued["status"], queued["pending_files"], queued["completed_at"]) == (
+        "processing",
+        2,
+        None,
+    )
+    assert {
+        (f["parse_status"], f["parse_error"], f["parse_confidence"], f["candidate_name"])
+        for f in queued["files"]
+    } == {("queued", None, None, None)}
+
+    pipeline(seeded_session, store).run_resume(batch_id, resumes[0].id)
+
+    halfway = batch_status(client, batch_id)
+    assert (halfway["status"], halfway["processed_files"], halfway["pending_files"]) == (
+        "processing",
+        1,
+        1,
+    )
+    assert [f["parse_status"] for f in halfway["files"]] == ["parsed", "queued"]
+
+
+def test_a_low_confidence_resume_needs_review(
+    client: TestClient, seeded_session: Session, store: FileStore
+) -> None:
+    batch_id, resumes = queued_batch(seeded_session, store, ["02_java_aliases.docx"])
+    resume = resumes[0]
+    resume.parse_status, resume.parse_confidence = ParseStatus.PARSED, Decimal("0.33")
+    resume.parsed_at = datetime.now(UTC)
+    seeded_session.commit()
+
+    (file,) = batch_status(client, batch_id)["files"]
+    assert (file["parse_confidence"], file["needs_review"]) == (0.33, True)
+
+
+def test_an_unknown_batch_is_404(client: TestClient) -> None:
+    response = client.get(f"/api/v1/batches/{uuid.uuid4()}")
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Batch not found"
+
+
+def test_polling_never_reads_resume_text_or_vectors(
+    client: TestClient, seeded_session: Session
+) -> None:
+    batch_id = upload(client, new_job(client), sample_files()[:3]).json()["batch_id"]
+    statements: list[str] = []
+
+    def record(*args: Any) -> None:
+        statements.append(args[2])  # (conn, cursor, statement, parameters, context, many)
+
+    connection = seeded_session.connection()
+    event.listen(connection, "before_cursor_execute", record)
+    try:
+        batch_status(client, batch_id)
+    finally:
+        event.remove(connection, "before_cursor_execute", record)
+
+    sql = "\n".join(statements).lower()
+    assert "raw_text" not in sql and "embedding" not in sql and "parsed_json" not in sql
+    assert len(statements) <= 3

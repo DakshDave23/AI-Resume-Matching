@@ -298,6 +298,7 @@ REST under `/api/v1`. Swagger UI at http://localhost:8000/docs lists every route
 | GET | `/jobs/{job_id}` | One job: extracted skills (required/preferred, weight, min years, source phrase), requirement sentences, years, degree, fields |
 | PATCH | `/jobs/{job_id}/requirements` | Recruiter edits; marks existing scores stale |
 | POST | `/jobs/{job_id}/resumes` | Upload 1–50 PDF/DOCX resumes; 202 with the batch id, accepted files and rejected files with reasons |
+| GET | `/batches/{batch_id}` | Batch progress for polling: status, parsed / failed / pending counts, and each file's parse status, error, confidence (`needs_review` below 0.5) and candidate name |
 
 **Resume uploads.** Each file is checked on arrival: size, real type (magic bytes, not the extension) and duplicates within the upload. A bad file is listed under `rejected` with a reason, and the rest go ahead. Accepted files are stored as `<uuid>.<ext>` under `UPLOAD_DIR`; the recruiter's file name is kept for display only. A background task then parses each one (extract → parse → chunk → embed → save) in its own transaction, so a failure marks only that file `failed`, with a reason such as "Looks like a scanned image; OCR is not enabled." The 15 samples finish in about 2 seconds on a laptop CPU. If the server stops mid-batch (a crash, or `--reload`), it finishes the remaining files when it starts again.
 

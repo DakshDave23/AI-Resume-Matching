@@ -2,11 +2,12 @@
 
 import uuid
 from dataclasses import dataclass
+from decimal import Decimal
 
 from sqlalchemy import case, func, literal, select, update
 from sqlalchemy.orm import Session
 
-from app.models import Resume, UploadBatch
+from app.models import Candidate, Resume, UploadBatch
 from app.models.enums import BatchStatus, FileType, ParseStatus, batch_status_type
 
 
@@ -92,3 +93,43 @@ def unfinished_batch_ids(session: Session) -> list[uuid.UUID]:
             .order_by(UploadBatch.created_at)
         )
     )
+
+
+@dataclass(frozen=True)
+class FileProgress:
+    resume_id: uuid.UUID
+    original_filename: str
+    file_type: FileType
+    file_size_bytes: int
+    parse_status: ParseStatus
+    parse_error: str | None
+    parse_confidence: Decimal | None
+    candidate_name: str | None
+
+
+def batch_progress(
+    session: Session, batch_id: uuid.UUID
+) -> tuple[UploadBatch, list[FileProgress]] | None:
+    """A batch and each file's state, for polling every 2 s: two small queries.
+
+    Only the columns the status view shows are read; never raw text or vectors.
+    """
+    batch = session.get(UploadBatch, batch_id, populate_existing=True)
+    if batch is None:
+        return None
+    rows = session.execute(
+        select(
+            Resume.id,
+            Resume.original_filename,
+            Resume.file_type,
+            Resume.file_size_bytes,
+            Resume.parse_status,
+            Resume.parse_error,
+            Resume.parse_confidence,
+            Candidate.full_name,
+        )
+        .outerjoin(Candidate, Candidate.id == Resume.candidate_id)
+        .where(Resume.batch_id == batch_id)
+        .order_by(Resume.created_at, Resume.original_filename)
+    ).all()
+    return batch, [FileProgress(*row) for row in rows]
