@@ -4,8 +4,10 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from app.core.config import get_settings
 from app.core.database import DatabaseStatus, get_database_status
 from app.main import create_app
+from app.services.nlp.embedder import Embedder
 from app.services.nlp.loader import ModelLoader
 from tests.fakes import FakeEncoder
 
@@ -33,3 +35,9 @@ def client(app: FastAPI) -> Iterator[TestClient]:
     with TestClient(app) as c:
         app.state.model_loader.wait(timeout=5)  # the fake loads instantly, but in a thread
         yield c
+
+
+@pytest.fixture(scope="session")
+def real_embedder() -> Embedder:
+    """The real model, loaded once per test run (tests using it are marked `model`)."""
+    return Embedder(get_settings().embedding_model)

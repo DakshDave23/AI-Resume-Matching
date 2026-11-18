@@ -99,6 +99,7 @@ class FoundSkill:
     sources: tuple[SkillSource, ...]
     mention_count: int
     evidence: str
+    terms: tuple[str, ...] = ()  # how the resume wrote it: "k8s", "Kubernetes" (exact vs alias)
 
 
 @dataclass(frozen=True)
@@ -317,6 +318,7 @@ class SkillExtractor:
                     sources=tuple(s for s in SkillSource if any(m.source == s for m in group)),
                     mention_count=len(group),
                     evidence=best.evidence,
+                    terms=tuple(dict.fromkeys(m.text for m in group)),
                 )
             )
         return sorted(found, key=lambda s: s.name.lower())

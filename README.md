@@ -279,6 +279,26 @@ Score = 100 × Σ(wᵢ · Sᵢ) / Σ(wᵢ)   over active components
 
 Default weights: skills 0.40, semantic 0.30, experience 0.20, education 0.10. A component the JD doesn't specify drops out and the rest are rescaled.
 
+### Skill score
+
+Each JD skill (weight 1.0 if required, 0.5 if preferred) earns credit from the first tier that fires:
+
+| Tier | Rule | Credit | Example (sample 3 vs the Java JD) |
+| --- | --- | --- | --- |
+| Exact | The resume has the skill, written as its name | 1.0 | Java |
+| Alias | The same skill through an alias or a fuzzy match | 1.0 | REST → REST APIs |
+| Related | A resume skill of the same category with cosine ≥ 0.58 | 0.5 | MySQL → PostgreSQL (0.62), RabbitMQ → Kafka (0.59) |
+| Contextual | Not listed, but an experience or project passage matches the skill's name with cosine ≥ 0.43 | 0.5 | "Split a monolith into 8 independently deployed services" → Microservices (0.46) |
+| Missing | None of the above | 0 | AWS |
+
+Skill score = Σ weight × credit ÷ Σ weight. For sample 3 that is 4.75 ÷ 6.5 = 0.731, the design doc's worked example, and a test checks it with the real model.
+
+- **Years check:** when the JD asks for "5+ years of Java" and the resume shows fewer, the credit is multiplied by max(0.5, used ÷ required).
+- **Never equivalent:** Java/JavaScript, C/C#, C/C++ and React/React Native are never related, and a passage naming the other one never counts as context.
+- **Custom skills:** a skill the recruiter adds is in no extractor dictionary, so its name is looked up in the resume text.
+
+**Thresholds were measured, not taken from the doc.** The doc starts at 0.80 (related) and 0.55 (contextual). `all-MiniLM-L6-v2` never reaches those for real matches: MySQL/PostgreSQL scores 0.62. Over all 3 JDs × 14 samples, 0.58 separates the intended related pairs (Kafka/RabbitMQ 0.59 and up) from the wrong ones (Next.js/Node.js 0.55, Java/Python 0.54). 0.43 separates the one described-but-unnamed skill (0.46) from the closest wrong one (0.40). The margins are thin, so a test pins every indirect match across the samples. Both values live in [`scoring_config.py`](backend/app/services/matching/scoring_config.py) and get recalibrated in step 30.
+
 _TODO: link to `docs/matching-algorithm.md`._
 
 ## Database

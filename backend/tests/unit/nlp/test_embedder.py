@@ -9,16 +9,15 @@ import types
 import numpy as np
 import pytest
 
-from app.core.config import get_settings
 from app.models.base import EMBEDDING_DIM
 from app.services.nlp.embedder import Embedder, EmbeddingError, encode_one
 
 pytestmark = pytest.mark.model
 
 
-@pytest.fixture(scope="module")
-def embedder() -> Embedder:
-    return Embedder(get_settings().embedding_model)
+@pytest.fixture
+def embedder(real_embedder: Embedder) -> Embedder:
+    return real_embedder
 
 
 def cosine(embedder: Embedder, a: str, b: str) -> float:

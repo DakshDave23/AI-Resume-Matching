@@ -95,6 +95,8 @@ def parsed_json(parsed: ParsedResume, today: date) -> dict[str, Any]:
             for role in work.roles
         ],
         "skill_months": parsed.skill_months,
+        # As written, so the matcher can tell an exact hit ("Kubernetes") from an alias ("k8s").
+        "skill_terms": {s.name: list(s.terms) for s in parsed.skills.skills},
         "unmapped_skills": list(parsed.skills.unmapped),
     }
 
