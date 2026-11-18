@@ -24,6 +24,11 @@ dependencies = [
     "rapidfuzz==3.14.6",  # fuzzy section headers (step 9) and skill variants
     "phonenumbers==9.0.43",  # phone validation and E.164 normalisation (step 10)
     "spacy==3.8.18",  # tokenizer + PhraseMatcher for skills (step 11); no model download needed
+    # Sentence embeddings (step 17). PyPI's torch is CPU-only on Windows and macOS; on
+    # Linux install the CPU build first to skip ~2 GB of CUDA libraries:
+    #   pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+    "sentence-transformers==6.3.0",
+    "torch==2.15.0",
 ]
 
 [project.optional-dependencies]
@@ -94,4 +99,5 @@ pythonpath = ["."]
 addopts = "-ra"
 markers = [
     "integration: needs a running Postgres + pgvector (docker compose up -d db)",
+    "model: loads the real embedding model (downloaded once, ~90 MB); skip with -m 'not model'",
 ]

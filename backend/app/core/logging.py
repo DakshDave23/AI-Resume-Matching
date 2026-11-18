@@ -13,5 +13,7 @@ def configure_logging(level: str) -> None:
         stream=sys.stdout,
         force=True,  # replace handlers so repeated app creation (tests) doesn't duplicate output
     )
-    # Uvicorn's access log duplicates what we need at INFO; keep it at WARNING.
-    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    # Uvicorn's access log duplicates what we need at INFO; keep it at WARNING. The
+    # Hugging Face libraries log every HTTP request made while fetching the model.
+    for noisy in ("uvicorn.access", "httpx", "httpx2", "huggingface_hub", "sentence_transformers"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)

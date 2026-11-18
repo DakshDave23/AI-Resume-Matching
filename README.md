@@ -52,7 +52,7 @@ React SPA → FastAPI REST API → extraction, parsing, embedding and matching s
 | --- | --- |
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query/Table |
 | Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic |
-| NLP | spaCy, sentence-transformers (`all-MiniLM-L6-v2`), rapidfuzz, dateparser |
+| NLP | spaCy (tokenizer and PhraseMatcher), sentence-transformers (`all-MiniLM-L6-v2`) on CPU PyTorch, rapidfuzz, phonenumbers |
 | Database | PostgreSQL 16 + pgvector |
 | DevOps | Docker Compose, GitHub Actions |
 
@@ -104,13 +104,16 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 cd backend
 py -3.12 -m venv .venv                 # macOS/Linux: python3.12 -m venv .venv
 .venv\Scripts\activate                 # macOS/Linux: source .venv/bin/activate
-pip install -e ".[dev]"
+# Linux only, first: pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+pip install -e ".[dev]"                # includes PyTorch (CPU) for the embedding model
 alembic upgrade head                   # create/upgrade the database schema
-python ../scripts/seed_skills.py       # load the skills taxonomy (safe to re-run)
+python ../scripts/seed_skills.py       # load the skills taxonomy and embed each skill
 uvicorn app.main:app --reload          # http://localhost:8000/docs
 ```
 
-**Skills taxonomy:** [`backend/app/data/skills_taxonomy.json`](backend/app/data/skills_taxonomy.json) lists ~430 skills in 15 categories, each with aliases (`k8s` → Kubernetes, `postgres` → PostgreSQL). To add a skill, add a line to the file and re-run the seed script. `seed_skills.py --check` validates the file without touching the database. It rejects any alias claimed by two skills.
+**Embedding model:** `EMBEDDING_MODEL` (default `sentence-transformers/all-MiniLM-L6-v2`, 384 dimensions) is downloaded from Hugging Face on first use (about 90 MB) and read from the local cache after that, so later starts work offline. The API loads it once, in the background, about 8 seconds after start-up. Until it is ready, `/health` answers 503 and routes that need it answer 503 with `model_loading`. Any other 384-dimensional model works (e.g. `BAAI/bge-small-en-v1.5`). After switching, run `seed_skills.py --reembed` and recalibrate the scoring thresholds.
+
+**Skills taxonomy:** [`backend/app/data/skills_taxonomy.json`](backend/app/data/skills_taxonomy.json) lists ~430 skills in 15 categories, each with aliases (`k8s` → Kubernetes, `postgres` → PostgreSQL). To add a skill, add a line to the file and re-run the seed script. `seed_skills.py --check` validates the file without touching the database. It rejects any alias claimed by two skills. The seed script then embeds every skill that has no vector yet (new, renamed or recruiter-added). Each skill is embedded as "name (category)", e.g. "Kafka (messaging)".
 
 Migrations live in `backend/alembic/versions/` and are numbered (`0001_...`). To add one after changing a model:
 
@@ -121,12 +124,13 @@ alembic upgrade head
 alembic check                          # "No new upgrade operations detected." = models and DB agree
 ```
 
-Health check: `GET http://localhost:8000/api/v1/health` returns 200 with `"database": "ok"` when Postgres is up, or 503 when it isn't.
+Health check: `GET http://localhost:8000/api/v1/health` returns 200 when Postgres, pgvector and the embedding model are all ready, and 503 otherwise. `checks` says which one: `{"database": "ok", "pgvector": "0.8.7", "embedding_model": "ok" | "loading" | "failed"}`.
 
 Lint, type-check and test:
 
 ```bash
 ruff check . && ruff format --check . && mypy app tests && pytest
+pytest -m "not model"                  # skip the tests that load the real embedding model
 ```
 
 ## Sample data

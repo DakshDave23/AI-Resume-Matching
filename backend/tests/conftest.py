@@ -6,19 +6,23 @@ from fastapi.testclient import TestClient
 
 from app.core.database import DatabaseStatus, get_database_status
 from app.main import create_app
+from app.services.nlp.loader import ModelLoader
+from tests.fakes import FakeEncoder
 
 HEALTHY_DB = DatabaseStatus(reachable=True, pgvector_version="0.8.0")
 
 
 @pytest.fixture
 def app() -> FastAPI:
-    """App with external dependencies faked, so unit tests run without Docker.
+    """App with external dependencies faked, so unit tests run without Docker or torch.
 
     Tests can replace any override, e.g.
-    `app.dependency_overrides[get_database_status] = lambda: DOWN`.
+    `app.dependency_overrides[get_database_status] = lambda: DOWN`, or set
+    `app.state.model_loader` to a loader that is still loading or fails.
     """
     app = create_app()
     app.dependency_overrides[get_database_status] = lambda: HEALTHY_DB
+    app.state.model_loader = ModelLoader(FakeEncoder)
     return app
 
 
@@ -26,4 +30,5 @@ def app() -> FastAPI:
 def client(app: FastAPI) -> Iterator[TestClient]:
     # `with` runs the lifespan hook, exactly like a real server start.
     with TestClient(app) as c:
+        app.state.model_loader.wait(timeout=5)  # the fake loads instantly, but in a thread
         yield c

@@ -45,8 +45,10 @@ class Settings(BaseSettings):
 
     # --- Parsing / NLP ---------------------------------------------------
     phone_default_region: str = Field(default="IN", min_length=2, max_length=2)
+    # Any 384-dimensional sentence-transformers model, e.g. BAAI/bge-small-en-v1.5. After
+    # switching, re-embed the skills (scripts/seed_skills.py --reembed) and recalibrate.
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
-    spacy_model: str = "en_core_web_sm"
+    embedding_batch_size: int = Field(default=32, gt=0, le=256)
 
     @property
     def cors_origin_list(self) -> list[str]:

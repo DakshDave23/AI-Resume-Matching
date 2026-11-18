@@ -8,6 +8,8 @@ from sqlalchemy import text
 
 from app.core.database import get_database_status, get_engine
 from app.main import create_app
+from app.services.nlp.loader import ModelLoader
+from tests.fakes import FakeEncoder
 
 pytestmark = pytest.mark.integration
 
@@ -31,7 +33,10 @@ def test_vector_extension_is_enabled_and_works() -> None:
 
 
 def test_health_reports_real_database_ready() -> None:
-    with TestClient(create_app()) as client:
+    app = create_app()
+    app.state.model_loader = ModelLoader(FakeEncoder)  # this test is about the database
+    with TestClient(app) as client:
+        app.state.model_loader.wait(timeout=5)
         response = client.get("/api/v1/health")
 
     assert response.status_code == 200

@@ -11,8 +11,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models import Skill
-from app.repositories.skills import SeedResult, upsert_taxonomy
+from app.repositories.skills import (
+    SeedResult,
+    fill_skill_embeddings,
+    skill_embedding_text,
+    upsert_taxonomy,
+)
 from app.services.nlp.taxonomy import Taxonomy
+from tests.fakes import FakeEncoder
 
 pytestmark = pytest.mark.integration
 
@@ -74,3 +80,50 @@ def test_the_database_rejects_an_unknown_category(db_session: Session) -> None:
 
     with pytest.raises(IntegrityError, match="ck_skills_category_valid"):
         db_session.flush()
+
+
+# --- Embeddings ---------------------------------------------------------------------
+
+
+def test_skill_vectors_come_from_name_and_category() -> None:
+    assert skill_embedding_text("Kafka", "messaging") == "Kafka (messaging)"
+
+
+def test_missing_vectors_are_filled_and_kept_on_the_next_run(db_session: Session) -> None:
+    upsert_taxonomy(db_session, taxonomy(ALPHA, BETA))
+    encoder = FakeEncoder()
+
+    fill_skill_embeddings(db_session, encoder)
+    alpha = get_skill(db_session, "Zz Alpha")
+    assert alpha.embedding is not None
+    assert len(alpha.embedding) == 384
+    assert "Zz Alpha (tool)" in encoder.calls[0]
+    assert len(encoder.calls) == 1  # one batched call, not one per skill
+
+    fill_skill_embeddings(db_session, encoder)  # nothing is missing now
+    assert encoder.calls[-1] == []
+
+
+def test_a_renamed_or_recategorised_skill_is_embedded_again(db_session: Session) -> None:
+    upsert_taxonomy(db_session, taxonomy(ALPHA, BETA))
+    fill_skill_embeddings(db_session, FakeEncoder())
+
+    upsert_taxonomy(db_session, taxonomy(ALPHA | {"category": "devops"}, BETA | {"aliases": ["b"]}))
+
+    assert get_skill(db_session, "Zz Alpha").embedding is None  # category changed
+    assert get_skill(db_session, "Zz Beta").embedding is not None  # only an alias changed
+    encoder = FakeEncoder()
+    fill_skill_embeddings(db_session, encoder)
+    assert "Zz Alpha (devops)" in encoder.calls[0]
+    assert "Zz Beta (tool)" not in encoder.calls[0]
+
+
+def test_everything_reembeds_all_skills(db_session: Session) -> None:
+    upsert_taxonomy(db_session, taxonomy(ALPHA, BETA))
+    fill_skill_embeddings(db_session, FakeEncoder())
+
+    encoder = FakeEncoder()
+    count = fill_skill_embeddings(db_session, encoder, everything=True)
+
+    assert count == len(encoder.calls[0]) >= 2
+    assert {"Zz Alpha (tool)", "Zz Beta (tool)"} <= set(encoder.calls[0])
