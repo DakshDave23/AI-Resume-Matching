@@ -13,6 +13,7 @@ ifeq ($(OS),Windows_NT)
   RUFF    := $(VENV)\ruff
   MYPY    := $(VENV)\mypy
   ALEMBIC := $(VENV)\alembic
+  BACKEND_PY := backend\.venv\Scripts\python
   LIST_TARGETS := findstr /R /C:"^[a-z-]*:.*\#\# " Makefile
 else
   PYTHON  := python3.12
@@ -23,6 +24,7 @@ else
   RUFF    := $(VENV)/ruff
   MYPY    := $(VENV)/mypy
   ALEMBIC := $(VENV)/alembic
+  BACKEND_PY := backend/.venv/bin/python
   LIST_TARGETS := grep -E '^[a-z-]+:.*\#\# ' Makefile | awk 'BEGIN {FS = ":.*\#\# "}; {printf "  %-10s %s\n", $$1, $$2}'
 endif
 
@@ -31,7 +33,7 @@ DB_USER ?= resume
 DB_NAME ?= resume_matcher
 
 .DEFAULT_GOAL := help
-.PHONY: help db-up db-down db-reset db-logs db-shell migrate install dev test lint format typecheck check
+.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed install dev test lint format typecheck check
 
 help:  ## List targets
 	@$(LIST_TARGETS)
@@ -55,6 +57,9 @@ db-shell:  ## Open psql inside the database container
 
 migrate:  ## Apply all database migrations
 	cd backend && $(ALEMBIC) upgrade head
+
+seed:  ## Load the skills taxonomy into the database (safe to re-run)
+	$(BACKEND_PY) scripts/seed_skills.py
 
 # --- Backend ----------------------------------------------------------------
 install:  ## Create the backend venv and install dependencies

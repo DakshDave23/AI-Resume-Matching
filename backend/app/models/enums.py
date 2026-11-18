@@ -55,6 +55,27 @@ class SkillSource(StrEnum):
     OTHER = "other"
 
 
+class SkillCategory(StrEnum):
+    """Taxonomy categories. Related-skill credit (tier 3) only flows within one category,
+    so categories are deliberately narrower than "tool" or "framework" alone."""
+
+    LANGUAGE = "language"  # Java, Python, SQL, HTML
+    FRAMEWORK = "framework"  # Spring Boot, React, Django
+    LIBRARY = "library"  # pandas, NumPy, PyTorch, scikit-learn
+    DATABASE = "database"  # PostgreSQL, MongoDB, Redis
+    MESSAGING = "messaging"  # Kafka, RabbitMQ, SQS
+    CLOUD = "cloud"  # AWS, Azure, S3
+    DEVOPS = "devops"  # Docker, Kubernetes, Terraform, CI/CD
+    TOOL = "tool"  # Git, Maven, Jira, IntelliJ
+    DATA = "data"  # Spark, Airflow, Tableau, ETL
+    ML = "ml"  # Machine Learning, NLP, Deep Learning
+    TESTING = "testing"  # JUnit, Selenium, Cypress
+    CONCEPT = "concept"  # REST APIs, Microservices, OOP
+    METHODOLOGY = "methodology"  # Agile, Scrum, TDD
+    SOFT = "soft"  # Communication, Leadership
+    BUSINESS = "business"  # Accounting, Excel, SAP
+
+
 class SkillAddedBy(StrEnum):
     """Who attached a skill to a job. Stored as VARCHAR(10) + CHECK, per the design doc."""
 

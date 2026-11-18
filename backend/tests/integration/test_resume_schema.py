@@ -30,7 +30,7 @@ NOW = datetime(2026, 11, 18, tzinfo=UTC)
 
 
 def test_parsed_resume_round_trips_with_all_children(db_session: Session) -> None:
-    java = Skill(canonical_name="Java", category="language")
+    java = Skill(canonical_name="Zz Java", category="language")
     resume = make_resume(
         make_batch(),
         candidate=Candidate(full_name="Asha Rao", email="asha@example.com", phone="+919876543210"),
@@ -84,7 +84,7 @@ def test_parsed_resume_round_trips_with_all_children(db_session: Session) -> Non
     assert loaded.candidate.email == "asha@example.com"
     # An array of a Postgres ENUM type comes back as Python enum members.
     assert loaded.skills[0].sources == [SkillSource.SKILLS_SECTION, SkillSource.EXPERIENCE]
-    assert loaded.skills[0].skill.canonical_name == "Java"
+    assert loaded.skills[0].skill.canonical_name == "Zz Java"
     assert loaded.work_experiences[0].is_current is True
     assert loaded.educations[0].degree_level == 3
     assert loaded.chunks[0].embedding == pytest.approx(VECTOR)
@@ -264,7 +264,7 @@ def test_a_resume_skill_needs_at_least_one_source(db_session: Session) -> None:
     resume = make_resume(make_batch())
     resume.skills = [
         ResumeSkill(
-            skill=Skill(canonical_name="Go", category="language"), sources=[], mention_count=1
+            skill=Skill(canonical_name="Zz Go", category="language"), sources=[], mention_count=1
         )
     ]
     db_session.add(resume)
@@ -335,7 +335,7 @@ def test_deleting_a_job_removes_everything_below_it_but_keeps_shared_rows(
 ) -> None:
     job = make_job()
     candidate = Candidate(email="asha@example.com")
-    skill = Skill(canonical_name="Kafka", category="tool")
+    skill = Skill(canonical_name="Zz Kafka", category="messaging")
     resume = make_resume(make_batch(job), candidate=candidate)
     resume.skills = [ResumeSkill(skill=skill, sources=[SkillSource.EXPERIENCE], mention_count=1)]
     resume.work_experiences = [WorkExperience(job_title="Engineer")]

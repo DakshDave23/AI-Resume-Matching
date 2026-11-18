@@ -31,7 +31,7 @@ def test_job_defaults_come_from_the_database(db_session: Session) -> None:
 
 
 def test_job_round_trips_with_requirements_skills_and_vectors(db_session: Session) -> None:
-    java = Skill(canonical_name="Java", category="language", aliases=["java8", "core java"])
+    java = Skill(canonical_name="Zz Java", category="language", aliases=["java8", "core java"])
     job = make_job(embedding=VECTOR, min_experience_years=Decimal("4"), required_degree_level=3)
     job.requirements = [make_requirement(0), make_requirement(1)]
     job.skills = [JobSkill(skill=java, requirement_type=RequirementType.REQUIRED)]
@@ -93,9 +93,9 @@ def test_job_rejects_invalid_values(
 
 
 def test_skill_names_are_unique_ignoring_case(db_session: Session) -> None:
-    db_session.add(Skill(canonical_name="PostgreSQL", category="database"))
+    db_session.add(Skill(canonical_name="Zz PostgreSQL", category="database"))
     db_session.flush()
-    db_session.add(Skill(canonical_name="postgresql", category="database"))
+    db_session.add(Skill(canonical_name="Zz postgresql", category="database"))
 
     with pytest.raises(IntegrityError, match="uq_skills_canonical_name_lower"):
         db_session.flush()
@@ -106,7 +106,7 @@ def test_job_skill_weight_must_be_in_range(db_session: Session, weight: Decimal)
     job = make_job()
     job.skills = [
         JobSkill(
-            skill=Skill(canonical_name="Kafka", category="tool"),
+            skill=Skill(canonical_name="Zz Kafka", category="messaging"),
             requirement_type=RequirementType.PREFERRED,
             weight=weight,
         )
@@ -127,7 +127,7 @@ def test_requirement_positions_are_unique_per_job(db_session: Session) -> None:
 
 
 def test_deleting_a_job_cascades_but_keeps_shared_skills(db_session: Session) -> None:
-    skill = Skill(canonical_name="Spring Boot", category="framework")
+    skill = Skill(canonical_name="Zz Spring Boot", category="framework")
     job = make_job()
     job.requirements = [make_requirement(0)]
     job.skills = [JobSkill(skill=skill, requirement_type=RequirementType.REQUIRED)]
@@ -143,7 +143,7 @@ def test_deleting_a_job_cascades_but_keeps_shared_skills(db_session: Session) ->
 
 
 def test_a_skill_in_use_cannot_be_deleted(db_session: Session) -> None:
-    skill = Skill(canonical_name="Docker", category="devops")
+    skill = Skill(canonical_name="Zz Docker", category="devops")
     job = make_job()
     job.skills = [JobSkill(skill=skill, requirement_type=RequirementType.PREFERRED)]
     db_session.add(job)

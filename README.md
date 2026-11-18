@@ -91,6 +91,7 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 | `make db-reset` | `docker compose down -v` then `make db-up` |
 | `make db-shell` | `docker compose exec db psql -U resume -d resume_matcher` |
 | `make migrate` | `cd backend && alembic upgrade head` |
+| `make seed` | `backend/.venv/Scripts/python scripts/seed_skills.py` |
 | `make install` | see the backend steps below |
 | `make dev` | `cd backend && uvicorn app.main:app --reload` |
 | `make check` | lint + type-check + tests (see below) |
@@ -103,8 +104,11 @@ py -3.12 -m venv .venv                 # macOS/Linux: python3.12 -m venv .venv
 .venv\Scripts\activate                 # macOS/Linux: source .venv/bin/activate
 pip install -e ".[dev]"
 alembic upgrade head                   # create/upgrade the database schema
+python ../scripts/seed_skills.py       # load the skills taxonomy (safe to re-run)
 uvicorn app.main:app --reload          # http://localhost:8000/docs
 ```
+
+**Skills taxonomy:** [`backend/app/data/skills_taxonomy.json`](backend/app/data/skills_taxonomy.json) lists ~430 skills in 15 categories, each with aliases (`k8s` → Kubernetes, `postgres` → PostgreSQL). To add a skill, add a line to the file and re-run the seed script. `seed_skills.py --check` validates the file without touching the database. It rejects any alias claimed by two skills.
 
 Migrations live in `backend/alembic/versions/` and are numbered (`0001_...`). To add one after changing a model:
 
