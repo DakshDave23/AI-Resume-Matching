@@ -129,3 +129,10 @@ EQUIVALENT_FIELDS: Final[tuple[frozenset[str], ...]] = tuple(
 # experience (the JD's minimum + 2 years) stands in for the degree.
 EQUIVALENT_EXPERIENCE_WEIGHT_FACTOR: Final = 0.5
 EQUIVALENT_EXPERIENCE_EXTRA_YEARS: Final = 2.0
+
+# --- Final score (§6.1) ---------------------------------------------------------------
+
+# Stored with every match result. Bump it whenever a weight or threshold above changes,
+# so old and new scores are never compared as if they were the same scale.
+SCORING_VERSION: Final = "v1.0"
+COMPONENTS: Final = ("skills", "semantic", "experience", "education")

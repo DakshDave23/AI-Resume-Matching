@@ -277,7 +277,9 @@ python -m app.services.parsing --jd ../sample_data/jds/backend_java_developer.tx
 Score = 100 × Σ(wᵢ · Sᵢ) / Σ(wᵢ)   over active components
 ```
 
-Default weights: skills 0.40, semantic 0.30, experience 0.20, education 0.10. A component the JD doesn't specify drops out and the rest are rescaled.
+Default weights: skills 0.40, semantic 0.30, experience 0.20, education 0.10. A component the JD doesn't ask for drops out and the rest are rescaled: experience without a minimum, education without a degree, skills without skills. With no years and no degree, skills and semantic count 0.57 and 0.43. "Or equivalent experience" halves education's weight first. Ties are broken by required-skill coverage, then relevant years.
+
+Each resume is scored right after it is parsed, in the same transaction that counts it, so when a batch shows `completed` every resume in it is scored and ranked. Results are upserted on (job, resume), so scoring again never duplicates. Every result stores its weights and `scoring_version`. A scoring bug can't undo a good parse: scoring runs in its own savepoint.
 
 ### Skill score
 

@@ -1,8 +1,8 @@
-"""The background pipeline: parse every resume of a batch (design doc §2, steps 3-5).
+"""The background pipeline: parse and score every resume of a batch (design doc §2, steps 3-5).
 
 For each resume, in its own transaction:
 
-    queued -> parsing -> extract -> parse -> chunk -> embed -> save -> parsed
+    queued -> parsing -> extract -> parse -> chunk -> embed -> save -> parsed -> score, rank
                                                      (any failure) -> failed, with a reason
 
 A bad file never fails the batch: its row says why, and the next file goes on.
@@ -24,11 +24,14 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.models import Resume
+from app.models import Resume, UploadBatch
 from app.models.enums import ParseStatus
 from app.repositories.batches import count_result, pending_resume_ids, unfinished_batch_ids
+from app.repositories.matches import assign_ranks
 from app.repositories.resumes import mark_failed, save_parsed_resume
 from app.services.extraction import ExtractionError, extract_text
+from app.services.matching.runner import score_resume
+from app.services.matching.scorer import ScoringJob, load_scoring_job
 from app.services.nlp.embedder import TextEncoder
 from app.services.nlp.vectors import embed_resume
 from app.services.parsing.chunker import chunk_resume
@@ -53,23 +56,41 @@ class Pipeline:
     today: Callable[[], date] = field(default=date.today)  # what "Present" means
 
     def run_batch(self, batch_id: uuid.UUID, resume_ids: list[uuid.UUID] | None = None) -> None:
-        """Parse the given resumes (default: every unfinished one) of a batch, in order."""
-        if resume_ids is None:
-            with self.sessions() as session:
+        """Parse and score the given resumes (default: every unfinished one) of a batch."""
+        with self.sessions() as session:
+            if resume_ids is None:
                 resume_ids = pending_resume_ids(session, batch_id)
+            job = self._scoring_job(session, batch_id)
         started = time.perf_counter()
         for resume_id in resume_ids:
-            self.run_resume(batch_id, resume_id)
+            self.run_resume(batch_id, resume_id, job)
         logger.info(
             "Batch %s: %d file(s) in %.1f s",
             batch_id,
             len(resume_ids),
             time.perf_counter() - started,
         )
-        # Step 26 adds: score every parsed resume of the batch against the job (§2, step 5).
 
-    def run_resume(self, batch_id: uuid.UUID, resume_id: uuid.UUID) -> ParseStatus | None:
-        """Parse one resume and count it on its batch. Returns its final status."""
+    def _scoring_job(self, session: Session, batch_id: uuid.UUID) -> ScoringJob | None:
+        """The batch's job, prepared for scoring once for the whole batch."""
+        batch = session.get(UploadBatch, batch_id)
+        if batch is None:
+            return None
+        try:
+            return load_scoring_job(session, batch.job_id, self.encoder)
+        except Exception:  # resumes still get parsed; POST /jobs/{id}/match scores them later
+            logger.exception("Job %s could not be prepared for scoring", batch.job_id)
+            session.rollback()
+            return None
+
+    def run_resume(
+        self, batch_id: uuid.UUID, resume_id: uuid.UUID, job: ScoringJob | None = None
+    ) -> ParseStatus | None:
+        """Parse one resume, score it against `job`, and count it on its batch.
+
+        Status, score and count change in one transaction: when the batch shows
+        completed, every resume in it is scored and ranked (§2, steps 4-6).
+        Returns the resume's final status."""
         with self.sessions() as session:
             resume = session.get(Resume, resume_id)
             if resume is None or resume.parse_status in (ParseStatus.PARSED, ParseStatus.FAILED):
@@ -94,6 +115,8 @@ class Pipeline:
                 mark_failed(resume, UNEXPECTED_FAILURE)
 
             status = resume.parse_status
+            if status == ParseStatus.PARSED and job is not None:
+                self._score(session, job, resume)
             count_result(session, batch_id, parsed=status == ParseStatus.PARSED)
             session.commit()
             return status
@@ -108,6 +131,15 @@ class Pipeline:
         save_parsed_resume(
             session, resume, text=text, parsed=parsed, chunks=chunks, vectors=vectors, today=today
         )
+
+    def _score(self, session: Session, job: ScoringJob, resume: Resume) -> None:
+        """A scoring bug must not undo a good parse: it runs in a savepoint of its own."""
+        try:
+            with session.begin_nested():
+                score_resume(session, job, resume.id, today=self.today(), encoder=self.encoder)
+                assign_ranks(session, job.job_id)
+        except Exception:
+            logger.exception("Resume %s parsed but could not be scored", resume.id)
 
     def resume_unfinished(self) -> int:
         """Finish batches a restart interrupted (a crash, or `uvicorn --reload` mid-batch).

@@ -1,6 +1,7 @@
 """Fixtures for tests that need the real Postgres from docker-compose."""
 
 from collections.abc import Iterator
+from contextlib import nullcontext
 from pathlib import Path
 
 import pytest
@@ -11,11 +12,13 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_file_store, get_session_factory
 from app.core.database import get_database_status, get_db, get_engine
 from app.main import create_app
 from app.repositories.skills import upsert_taxonomy
 from app.services.nlp.loader import ModelLoader
 from app.services.nlp.taxonomy import get_taxonomy
+from app.services.storage import FileStore
 from tests.fakes import FakeEncoder
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -84,3 +87,17 @@ def api(seeded_session: Session) -> Iterator[TestClient]:
     with TestClient(app) as client:
         app.state.model_loader.wait(timeout=5)
         yield client
+
+
+@pytest.fixture
+def store(tmp_path: Path) -> FileStore:
+    """Uploaded files go to a temporary folder."""
+    return FileStore(tmp_path / "uploads")
+
+
+def wire(app: FastAPI, session: Session, store: FileStore) -> FastAPI:
+    """Point uploads and background work at the test's store and session."""
+    app.dependency_overrides[get_file_store] = lambda: store
+    # Background work opens "its own" sessions: here, the test's session, never closed.
+    app.dependency_overrides[get_session_factory] = lambda: lambda: nullcontext(session)
+    return app

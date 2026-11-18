@@ -14,16 +14,13 @@ from collections.abc import Iterator, Sequence
 from contextlib import nullcontext
 from datetime import UTC, datetime
 from decimal import Decimal
-from pathlib import Path
 from typing import Any
 
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import event, func, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_file_store, get_session_factory
 from app.core.config import Settings, get_settings
 from app.models import Resume, ResumeChunk, UploadBatch
 from app.models.enums import BatchStatus, FileType, ParseStatus
@@ -33,25 +30,13 @@ from app.services.nlp.loader import ModelLoader
 from app.services.pipeline import MISSING_FILE, UNEXPECTED_FAILURE, Pipeline
 from app.services.storage import FileStore
 from tests.fakes import FakeEncoder
-from tests.integration.conftest import make_api_app
+from tests.integration.conftest import make_api_app, wire
 from tests.integration.factories import make_job
 from tests.samples import GROUND_TRUTH, SAMPLES, jd, jd_text
 
 pytestmark = pytest.mark.integration
 
 SCANNED_REASON = "Looks like a scanned image; OCR is not enabled."
-
-
-@pytest.fixture
-def store(tmp_path: Path) -> FileStore:
-    return FileStore(tmp_path / "uploads")
-
-
-def wire(app: FastAPI, session: Session, store: FileStore) -> FastAPI:
-    app.dependency_overrides[get_file_store] = lambda: store
-    # Background work opens "its own" sessions: here, the test's session, never closed.
-    app.dependency_overrides[get_session_factory] = lambda: lambda: nullcontext(session)
-    return app
 
 
 @pytest.fixture
@@ -228,17 +213,13 @@ def test_uploading_needs_the_model(seeded_session: Session, store: FileStore) ->
 # --- The pipeline on its own ------------------------------------------------------------------
 
 
-class FailsOnce:
-    """An encoder that breaks on its first call, like a transient bug or outage."""
+class FailsOnOneResume:
+    """An encoder that breaks while embedding sample 1 (Acme Fintech), like a bug would."""
 
-    model_name = "fails-once"
-
-    def __init__(self) -> None:
-        self.calls = 0
+    model_name = "fails-on-one"
 
     def encode(self, texts: Sequence[str]) -> Vectors:
-        self.calls += 1
-        if self.calls == 1:
+        if any("Acme Fintech" in t for t in texts):
             raise RuntimeError("boom")
         return FakeEncoder().encode(texts)
 
@@ -280,7 +261,7 @@ def test_an_unexpected_error_fails_one_file_and_the_next_goes_on(
     batch_id, _ = queued_batch(
         seeded_session, store, ["01_senior_java_engineer.pdf", "02_java_aliases.docx"]
     )
-    pipeline(seeded_session, store, FailsOnce()).run_batch(batch_id)
+    pipeline(seeded_session, store, FailsOnOneResume()).run_batch(batch_id)
 
     assert statuses(seeded_session, batch_id) == [
         ("01_senior_java_engineer.pdf", ParseStatus.FAILED, UNEXPECTED_FAILURE),
