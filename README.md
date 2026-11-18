@@ -299,6 +299,20 @@ Skill score = Σ weight × credit ÷ Σ weight. For sample 3 that is 4.75 ÷ 6.5
 
 **Thresholds were measured, not taken from the doc.** The doc starts at 0.80 (related) and 0.55 (contextual). `all-MiniLM-L6-v2` never reaches those for real matches: MySQL/PostgreSQL scores 0.62. Over all 3 JDs × 14 samples, 0.58 separates the intended related pairs (Kafka/RabbitMQ 0.59 and up) from the wrong ones (Next.js/Node.js 0.55, Java/Python 0.54). 0.43 separates the one described-but-unnamed skill (0.46) from the closest wrong one (0.40). The margins are thin, so a test pins every indirect match across the samples. Both values live in [`scoring_config.py`](backend/app/services/matching/scoring_config.py) and get recalibrated in step 30.
 
+### Semantic similarity
+
+```
+best_i   = max over resume passages of cos(requirement_i, passage)
+coverage = weighted mean of best_i            (required 1.0, preferred 0.5)
+raw      = 0.7 × coverage + 0.3 × cos(whole JD, whole resume)
+S_sem    = clip((raw − 0.30) ÷ (0.47 − 0.30), 0, 1)
+```
+
+- **Calibration (L = 0.30, H = 0.47).** Raw cosines sit in a narrow band. Following the design doc's rule, L is the average raw score of the "weak" sample/JD pairs (0.295) and H that of the "strong" ones (0.473). The doc's starting values (0.20 / 0.70) assume a wider-spread model.
+- **Result on the samples:** the accountant, the data scientist and the keyword stuffer score 0.00–0.03 against the Java JD. Strong pairs average 0.95 and weak ones 0.10, and in every JD each strong sample scores above every weak one. Good candidates bunch at the top, so this component mainly separates relevant from irrelevant; skills and experience do the fine ranking.
+- **Years and degree sentences are left out.** "4+ years of professional experience" matches any summary that states years: it scores 0.40 against a chartered accountant's. These sentences already count in the experience and education components.
+- **Requirement table:** each requirement keeps its best passage and a status: covered (≥ 0.40), partial (0.30–0.40) or not covered.
+
 _TODO: link to `docs/matching-algorithm.md`._
 
 ## Database

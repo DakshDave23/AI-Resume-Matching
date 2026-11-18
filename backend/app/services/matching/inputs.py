@@ -1,14 +1,16 @@
-"""Load what the skill matcher needs, from the database or straight from the parsers."""
+"""Load what the scorers need, from the database or straight from the parsers."""
 
 import uuid
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import JobSkill, Resume, ResumeChunk, ResumeSkill, Skill
+from app.models import Job, JobRequirement, JobSkill, Resume, ResumeChunk, ResumeSkill, Skill
 from app.repositories.skills import skill_embedding_text
+from app.services.matching.semantic import RequirementInput
 from app.services.matching.skills import CandidateSkillInput, JobSkillInput, Passage
 from app.services.nlp.embedder import TextEncoder
 from app.services.nlp.taxonomy import get_taxonomy
@@ -17,8 +19,13 @@ from app.services.parsing.chunker import Chunk
 from app.services.parsing.jd_parser import JobParse
 from app.services.parsing.resume_parser import ParsedResume
 
-# Only described work counts as context for tier 4, not the summary (§6.2).
-CONTEXT_SECTIONS = ("experience", "projects")
+
+@dataclass(frozen=True)
+class CandidateData:
+    skills: list[CandidateSkillInput]
+    passages: list[Passage]  # every chunk, in resume order
+    text: str
+    vector: Vector | None  # the whole-resume vector
 
 
 def _vector(value: object) -> Vector | None:
@@ -50,10 +57,27 @@ def load_job_skills(session: Session, job_id: uuid.UUID) -> list[JobSkillInput]:
     ]
 
 
-def load_candidate(
-    session: Session, resume_id: uuid.UUID
-) -> tuple[list[CandidateSkillInput], list[Passage], str]:
-    """A parsed resume's skills, its experience/project chunks, and its text."""
+def load_requirements(
+    session: Session, job_id: uuid.UUID
+) -> tuple[list[RequirementInput], Vector | None]:
+    """A job's requirement sentences (in JD order) and its whole-JD vector."""
+    rows = session.scalars(
+        select(JobRequirement)
+        .where(JobRequirement.job_id == job_id)
+        .order_by(JobRequirement.position)
+    ).all()
+    requirements = [
+        RequirementInput(
+            r.id, r.text, r.category, r.requirement_type, np.asarray(r.embedding, np.float32)
+        )
+        for r in rows
+    ]
+    job_vector = session.scalar(select(Job.embedding).where(Job.id == job_id))
+    return requirements, _vector(job_vector)
+
+
+def load_candidate(session: Session, resume_id: uuid.UUID) -> CandidateData:
+    """A parsed resume's skills, its chunks (every section), its text and its vector."""
     resume = session.get(Resume, resume_id)
     if resume is None:
         raise LookupError(f"no resume {resume_id}")
@@ -77,11 +101,11 @@ def load_candidate(
     ]
     chunks = session.scalars(
         select(ResumeChunk)
-        .where(ResumeChunk.resume_id == resume_id, ResumeChunk.section.in_(CONTEXT_SECTIONS))
+        .where(ResumeChunk.resume_id == resume_id)
         .order_by(ResumeChunk.chunk_index)
     ).all()
     passages = [Passage(c.section, c.text, np.asarray(c.embedding, np.float32)) for c in chunks]
-    return skills, passages, resume.raw_text or ""
+    return CandidateData(skills, passages, resume.raw_text or "", _vector(resume.embedding))
 
 
 # --- Straight from the parsers (tests, evaluation scripts) -------------------------------
@@ -135,9 +159,12 @@ def candidate_from_parse(
                 vector=vectors.get(found.name),
             )
         )
-    passages = [
-        Passage(c.section, c.text, v)
-        for c, v in zip(chunks, chunk_vectors, strict=True)
-        if c.section in CONTEXT_SECTIONS
-    ]
+    passages = [Passage(c.section, c.text, v) for c, v in zip(chunks, chunk_vectors, strict=True)]
     return skills, passages
+
+
+def requirements_from_parse(parsed: JobParse, vectors: np.ndarray) -> list[RequirementInput]:
+    return [
+        RequirementInput(None, r.text, r.category, r.requirement_type, v)
+        for r, v in zip(parsed.requirements, vectors, strict=True)
+    ]

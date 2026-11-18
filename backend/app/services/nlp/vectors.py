@@ -2,7 +2,8 @@
 
 - Resume: one vector per chunk, one per role (title + description, for role
   relevance in §6.4), and a whole-resume vector.
-- JD: one vector per requirement sentence and a whole-JD vector.
+- JD: one vector per requirement sentence and a whole-JD vector (from the
+  requirements the semantic score uses).
 
 The whole-document vector is the normalised mean of the document's chunk (or
 requirement) vectors, as §6.3 defines it. Each document takes one batched model call.
@@ -15,6 +16,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from app.models.base import EMBEDDING_DIM
+from app.services.matching.scoring_config import NOT_SEMANTIC_CATEGORIES
 from app.services.nlp.embedder import TextEncoder, Vectors
 from app.services.parsing.chunker import Chunk
 from app.services.parsing.experience import Role
@@ -68,6 +70,11 @@ def embed_resume(
 
 
 def embed_job(requirements: Sequence[JobRequirement], encoder: TextEncoder) -> JobVectors:
+    """Every requirement is embedded; the whole-JD vector averages only those the
+    semantic score uses (not the years and degree sentences, see scoring_config)."""
     texts = [r.text for r in requirements]
     vectors = encoder.encode(texts) if texts else np.zeros((0, EMBEDDING_DIM), np.float32)
-    return JobVectors(vectors, mean_vector(vectors))
+    semantic = [
+        i for i, r in enumerate(requirements) if r.category.value not in NOT_SEMANTIC_CATEGORIES
+    ]
+    return JobVectors(vectors, mean_vector(vectors[semantic]))

@@ -52,3 +52,28 @@ NEVER_EQUIVALENT: Final[frozenset[frozenset[str]]] = frozenset(
 
 # Years check: below a skill's min_years, credit x max(floor, years used / required).
 YEARS_CREDIT_FLOOR: Final = 0.5
+
+# --- Semantic similarity (§6.3) -------------------------------------------------------
+
+# raw = 0.7 * requirement coverage + 0.3 * whole-document cosine
+COVERAGE_SHARE: Final = 0.7
+DOCUMENT_SHARE: Final = 0.3
+
+# Years and degree sentences are scored by the experience and education components.
+# Here they would count twice, and they match any summary that states years ("10 years
+# of experience in bookkeeping" scores 0.40 against "4+ years of backend development").
+# Without them the strong/weak gap in raw scores grows from 0.160 to 0.178.
+NOT_SEMANTIC_CATEGORIES: Final = frozenset({"experience", "education"})
+
+# S_sem = clip((raw - L) / (H - L), 0, 1). The doc's rule, applied to the samples: L is
+# the mean raw score of the "weak" sample/JD pairs (0.295, n=28), H that of the
+# "strong" ones (0.473, n=6), measured with all-MiniLM-L6-v2 on 2026-11-19. The doc's
+# starting values (0.20, 0.70) suit a model with a wider spread.
+SEMANTIC_FLOOR: Final = 0.30  # L
+SEMANTIC_CEILING: Final = 0.47  # H
+
+# Requirement table status (§7.5), from the best passage's cosine. The doc's 0.55 / 0.40
+# leave almost nothing covered with this model: the median best match of a strong
+# candidate's requirements is 0.40, the accountant's 0.21.
+COVERED_MIN_COSINE: Final = 0.40
+PARTIAL_MIN_COSINE: Final = 0.30

@@ -36,6 +36,8 @@ from app.services.nlp.embedder import TextEncoder
 from app.services.nlp.taxonomy import normalize_term
 from app.services.nlp.vectors import Vector
 
+# Tier 4 looks for a skill in described work only, not in the summary (§6.2).
+CONTEXT_SECTIONS = frozenset({"experience", "projects"})
 MAX_EVIDENCE_CHARS = 1000  # a whole chunk (up to 120 words) for tier 4
 
 
@@ -72,7 +74,7 @@ class CandidateSkillInput:
 
 @dataclass(frozen=True)
 class Passage:
-    """An experience or project chunk of the resume, with its vector."""
+    """A chunk of the resume (summary, experience or projects), with its vector."""
 
     section: str
     text: str
@@ -256,7 +258,8 @@ class _Matcher:
         scored = [
             (float(p.vector @ query), p)
             for p in self.passages
-            if not any(_names(p.text, partner) for partner in partners)  # "JavaScript" != Java
+            if p.section in CONTEXT_SECTIONS  # described work, not the summary's claims
+            and not any(_names(p.text, partner) for partner in partners)  # "JavaScript" != Java
         ]
         if not scored:
             return None

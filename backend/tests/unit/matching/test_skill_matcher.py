@@ -218,6 +218,16 @@ def test_the_contextual_threshold(cosine: float, tier: Tier) -> None:
     assert only(result)[0] == tier
 
 
+def test_the_summary_is_not_described_work() -> None:
+    result = score(
+        [job_skill("Microservices")],
+        [],
+        [Passage("summary", "Microservices enthusiast.", at_cosine(0.9))],
+        context={"Microservices": X},
+    )
+    assert only(result)[0] == Tier.MISSING
+
+
 def test_a_passage_naming_the_guarded_twin_never_counts() -> None:
     result = score(
         [job_skill("Java", category="language")],
