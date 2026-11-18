@@ -1,4 +1,4 @@
-"""Show what the parser gets from a resume: contact, work history, skills, then sections.
+"""Show what the parser gets from a resume: contact, work, education, skills, sections.
 
 python -m app.services.parsing ../sample_data/resumes/02_java_aliases.docx
 """
@@ -11,6 +11,7 @@ from pathlib import Path
 from app.core.config import get_settings
 from app.services.extraction import ExtractionError, extract_text, validate_file
 from app.services.parsing.contact import extract_contact
+from app.services.parsing.education import parse_education
 from app.services.parsing.experience import parse_experience, skill_months
 from app.services.parsing.sections import CONTACT, segment
 from app.services.parsing.skills import get_skill_extractor
@@ -49,6 +50,12 @@ def main(argv: list[str]) -> int:
         months = role.months(today)
         length = f" ({months} mo)" if months is not None else ""
         print(f"{role.title} | {role.company} | {role.location or '-'} | {when}{length}{intern}")
+
+    education = parse_education(segmentation.text_of("education"))
+    level = education.highest_level
+    print(f"\n--- education: highest {level.name.lower() if level is not None else '-'} ---")
+    for entry in education.entries:
+        print(f"{entry.degree} | {entry.field or '-'} | {entry.institution or '-'} | {entry.year}")
 
     skills = get_skill_extractor().extract_resume(segmentation)
     used = skill_months(work, get_skill_extractor(), today=today)

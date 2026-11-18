@@ -204,7 +204,26 @@ Title and company come from the role's header: the date line itself (`Engineer |
 
 Dates use a small built-in grammar rather than dateparser, which fills missing parts from today ("2019" would become 2019-*this month*).
 
-To see what the parser gets from a resume (contact details, work history, skills, then sections):
+## Education
+
+Each entry gets a degree, a level, a field, an institution and a year. The resume's highest level is used for scoring.
+
+| Level | Examples |
+| --- | --- |
+| 5 doctorate | PhD, Ph.D., Doctor of Philosophy |
+| 4 master's | M.Tech, M.Sc, MS, MBA, MCA, Master's, Master of Computer Applications, PGDM / Post Graduate Diploma |
+| 3 bachelor's | B.Tech, B.E., BE, B.Sc, BCA, B.Com, Bachelor's, Bachelor of Technology |
+| 2 diploma | Diploma, Associate Degree |
+| 1 high school | HSC, SSC, 12th, Class XII, High School Diploma |
+
+- Two-letter forms that are also words (BE, ME, MS, BA, MA) count only in capitals, and "MS Excel" is not a master's.
+- **Field** is the text after "in" ("B.Tech in Computer Science"). After "of", a dash, comma or bracket it counts only if it is a known field ("Master of Computer Applications", "B.E. (Electronics and Communication)").
+- **Institution** is the piece containing University, College, Institute, School, Academy, IIT/NIT, ...
+- **Year** is the latest year in the entry, so "2016 – 2020" gives 2020.
+
+Entries may sit on one line or several, with the institution above or below the degree. A dual degree counts at its highest level.
+
+To see what the parser gets from a resume (contact details, work history, education, skills, then sections):
 
 ```bash
 cd backend
