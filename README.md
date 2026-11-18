@@ -223,11 +223,32 @@ Each entry gets a degree, a level, a field, an institution and a year. The resum
 
 Entries may sit on one line or several, with the institution above or below the degree. A dual degree counts at its highest level.
 
-To see what the parser gets from a resume (contact details, work history, education, skills, then sections):
+## Job description parsing
+
+A JD (pasted text, TXT, PDF or DOCX) is read with the same section engine, skill matcher and degree patterns as resumes.
+
+- **Title, company, location** come from "Job Title:", "Company:" and "Location:" labels, or the first short line for the title. **Seniority** (junior, mid, senior, lead, principal) comes from the title's words; a title without one is mid level.
+- **Sections:** Responsibilities, Requirements (Qualifications, Must have) and Preferred (Nice to have, Bonus). "About us" and benefits text is not scanned for skills. A JD with no headers is read whole.
+- **Required or preferred** is decided for each skill mention. The section decides first; cues in the same clause override it:
+
+  | | Required | Preferred |
+  | --- | --- | --- |
+  | Strong cues | must, required, mandatory, minimum | a plus, bonus, preferred, nice to have, not required |
+  | Weak cues | strong, proficient, solid, expert | familiarity with, exposure to, basic knowledge |
+
+  Strong cues outrank weak ones ("Strong communication skills are a plus" is preferred), and in a mixed sentence the nearest cue wins ("Java is required and Kotlin is a plus"). "Strong" doesn't move a skill out of a Nice-to-have list. With no signal (Responsibilities), a skill is required.
+- **Years:** "5+ years", "3–5 years", "minimum of 4 years", "at least 2 yrs", "five years". Years that lead straight into skills ("4+ years of Java and Spring Boot", "Java (5+ years)") become those skills' minimum years. The JD's minimum is the largest figure in a required general sentence ("4+ years of professional experience", "3+ years as a data scientist").
+- **Education:** the required level is the lowest one a required clause accepts ("BS/MS in CS" → bachelor's; "Master's preferred" is not required). Fields come from "in Statistics, Computer Science, Mathematics or a related field". "Or equivalent experience" marks education as soft.
+- **Requirement rows:** every bullet (or prose sentence) under Responsibilities, Requirements and Preferred, tagged responsibility, experience, education, skill or other.
+
+## Trying the parsers
+
+To see what the parser gets from a resume (contact details, work history, education, skills, then sections) or a JD (title, skills, years, degree, requirement rows):
 
 ```bash
 cd backend
 python -m app.services.parsing ../sample_data/resumes/02_java_aliases.docx
+python -m app.services.parsing --jd ../sample_data/jds/backend_java_developer.txt
 ```
 
 ## How matching works

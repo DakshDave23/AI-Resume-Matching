@@ -1,4 +1,4 @@
-"""Find taxonomy skills in resume (and later JD) text (design doc §5.3).
+"""Find taxonomy skills in resume and JD text (design doc §5.3).
 
 1. Exact and alias pass: a spaCy PhraseMatcher over tokens holds every skill
    name and alias, plus a simple plural ("audits", "unit tests"). Overlapping
@@ -18,7 +18,7 @@ explanation later.
 
 import re
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 
 from rapidfuzz import fuzz, process, utils
@@ -77,6 +77,8 @@ class SkillMention:
     text: str  # as written in the resume
     evidence: str  # the line (or wrapped bullet) it appeared in
     fuzzy: bool = False
+    # Character offsets in the text given to find_mentions (None for skill-list items).
+    span: tuple[int, int] | None = field(default=None, compare=False)
 
 
 @dataclass(frozen=True)
@@ -199,6 +201,7 @@ class SkillExtractor:
                 source=source,
                 text=span.text,
                 evidence=_evidence(text, span.start_char, span.end_char),
+                span=(span.start_char, span.end_char),
             )
             for span in sorted(self._spans(doc, skill_list=skill_list), key=lambda s: s.start)
         ]

@@ -83,6 +83,16 @@ class SkillAddedBy(StrEnum):
     RECRUITER = "recruiter"
 
 
+class Seniority(StrEnum):
+    """Read from a JD title (design doc §5.4). Kept in jobs.parsed_json; there is no column."""
+
+    JUNIOR = "junior"
+    MID = "mid"
+    SENIOR = "senior"
+    LEAD = "lead"
+    PRINCIPAL = "principal"
+
+
 class DegreeLevel(IntEnum):
     """Stored as SMALLINT 0-5 with a CHECK constraint, so levels can be compared with >=."""
 

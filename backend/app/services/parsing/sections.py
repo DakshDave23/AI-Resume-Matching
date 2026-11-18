@@ -13,7 +13,7 @@ Text before the first header is the contact block. Headers we recognise but don'
 parse (Hobbies, Languages, ...) open an "other" section, so their text doesn't
 leak into the section above them.
 
-The engine takes the header dictionary as an argument; the JD parser (step 11)
+The engine takes the header dictionary as an argument; the JD parser (step 14)
 reuses it with Requirements / Nice to have / Responsibilities headers.
 """
 
