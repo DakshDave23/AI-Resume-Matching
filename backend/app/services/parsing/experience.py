@@ -68,6 +68,11 @@ class WorkHistory:
     current_title: str | None
 
 
+def is_internship_title(title: str | None) -> bool:
+    """Intern, trainee or apprentice roles are listed but not counted as experience."""
+    return bool(title and _INTERNSHIP.search(title))
+
+
 # --- reading lines ------------------------------------------------------------
 
 
@@ -186,7 +191,7 @@ def _roles_from_anchors(lines: list[str], anchors: list[_Anchor]) -> list[Role]:
                 location=location,
                 dates=anchor.dates,
                 description=description,
-                is_internship=bool(title and _INTERNSHIP.search(title)),
+                is_internship=is_internship_title(title),
             )
         )
     return roles
@@ -207,7 +212,7 @@ def _undated_roles(lines: list[str]) -> list[Role]:
             i += 1
         if header and any(_is_bullet(b) for b in body):
             title, company, location = parse_header(header)
-            internship = bool(title and _INTERNSHIP.search(title))
+            internship = is_internship_title(title)
             roles.append(Role(title, company, location, None, "\n".join(body).strip(), internship))
     return roles
 

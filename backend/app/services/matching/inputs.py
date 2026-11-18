@@ -8,14 +8,25 @@ import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Job, JobRequirement, JobSkill, Resume, ResumeChunk, ResumeSkill, Skill
+from app.models import (
+    Job,
+    JobRequirement,
+    JobSkill,
+    Resume,
+    ResumeChunk,
+    ResumeSkill,
+    Skill,
+    WorkExperience,
+)
 from app.repositories.skills import skill_embedding_text
+from app.services.matching.experience import RoleInput
 from app.services.matching.semantic import RequirementInput
 from app.services.matching.skills import CandidateSkillInput, JobSkillInput, Passage
 from app.services.nlp.embedder import TextEncoder
 from app.services.nlp.taxonomy import get_taxonomy
 from app.services.nlp.vectors import Vector
 from app.services.parsing.chunker import Chunk
+from app.services.parsing.experience import is_internship_title
 from app.services.parsing.jd_parser import JobParse
 from app.services.parsing.resume_parser import ParsedResume
 
@@ -26,6 +37,9 @@ class CandidateData:
     passages: list[Passage]  # every chunk, in resume order
     text: str
     vector: Vector | None  # the whole-resume vector
+    roles: list[RoleInput]
+    total_months: int | None
+    stated_months: int | None  # the total a resume without dates states in its summary
 
 
 def _vector(value: object) -> Vector | None:
@@ -105,7 +119,32 @@ def load_candidate(session: Session, resume_id: uuid.UUID) -> CandidateData:
         .order_by(ResumeChunk.chunk_index)
     ).all()
     passages = [Passage(c.section, c.text, np.asarray(c.embedding, np.float32)) for c in chunks]
-    return CandidateData(skills, passages, resume.raw_text or "", _vector(resume.embedding))
+    roles = [
+        RoleInput(
+            title=w.job_title,
+            company=w.company,
+            start=w.start_date,
+            end=w.end_date,
+            is_current=w.is_current,
+            is_internship=is_internship_title(w.job_title),
+            vector=_vector(w.embedding),
+        )
+        for w in session.scalars(
+            select(WorkExperience)
+            .where(WorkExperience.resume_id == resume_id)
+            .order_by(WorkExperience.id)
+        )
+    ]
+    stated = (resume.parsed_json or {}).get("experience_source") == "summary_statement"
+    return CandidateData(
+        skills=skills,
+        passages=passages,
+        text=resume.raw_text or "",
+        vector=_vector(resume.embedding),
+        roles=roles,
+        total_months=resume.total_experience_months,
+        stated_months=resume.total_experience_months if stated else None,
+    )
 
 
 # --- Straight from the parsers (tests, evaluation scripts) -------------------------------
@@ -167,4 +206,21 @@ def requirements_from_parse(parsed: JobParse, vectors: np.ndarray) -> list[Requi
     return [
         RequirementInput(None, r.text, r.category, r.requirement_type, v)
         for r, v in zip(parsed.requirements, vectors, strict=True)
+    ]
+
+
+def roles_from_parse(
+    parsed: ParsedResume, role_vectors: Sequence[Vector | None]
+) -> list[RoleInput]:
+    return [
+        RoleInput(
+            title=role.title,
+            company=role.company,
+            start=role.dates.start.as_date() if role.dates else None,
+            end=role.dates.end.as_date() if role.dates and role.dates.end else None,
+            is_current=role.is_current,
+            is_internship=role.is_internship,
+            vector=vector,
+        )
+        for role, vector in zip(parsed.work.roles, role_vectors, strict=True)
     ]

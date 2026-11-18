@@ -313,6 +313,17 @@ S_sem    = clip((raw − 0.30) ÷ (0.47 − 0.30), 0, 1)
 - **Years and degree sentences are left out.** "4+ years of professional experience" matches any summary that states years: it scores 0.40 against a chartered accountant's. These sentences already count in the experience and education components.
 - **Requirement table:** each requirement keeps its best passage and a status: covered (≥ 0.40), partial (0.30–0.40) or not covered.
 
+### Relevant experience
+
+Total years can mislead: a QA engineer with 5 years who moved to backend 18 months ago has 1.5 years of backend experience.
+
+1. **Role profile:** the JD's title and responsibility sentences, embedded as one text.
+2. **Each role** (title + bullets) is compared with it: cosine ≥ 0.55 counts fully, 0.42–0.55 counts half, below that not at all.
+3. **Month by month,** each month counts once, at the best factor of any role active then, so overlapping jobs are never double counted. Internships don't count.
+4. **Relevant years ÷ the JD's minimum,** capped at 1. A JD without a minimum leaves this component out. Being above the JD's maximum is shown but never penalised: such a penalty works as a proxy for age.
+
+Against the Java JD, every figure in the ground truth comes out exactly: sample 8 has 1.5 relevant years (its QA role scores 0.39), Candidate A 4.5 (support role 0.34), sample 4 2.0 (internship excluded). The design doc's partial cut-off of 0.40 would have sat 0.01 above the QA role, so it is 0.42.
+
 _TODO: link to `docs/matching-algorithm.md`._
 
 ## Database

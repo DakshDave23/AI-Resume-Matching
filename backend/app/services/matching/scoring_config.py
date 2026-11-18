@@ -77,3 +77,15 @@ SEMANTIC_CEILING: Final = 0.47  # H
 # candidate's requirements is 0.40, the accountant's 0.21.
 COVERED_MIN_COSINE: Final = 0.40
 PARTIAL_MIN_COSINE: Final = 0.30
+
+# --- Relevant experience (§6.4) -----------------------------------------------------
+
+# Cosine between a role (title + description) and the JD's role profile (its title and
+# responsibility sentences, embedded as one text) -> how much each month in it counts.
+# Measured against the Java JD (2026-11-19): the backend roles of samples 3, 4 and 8 score
+# 0.66-0.72; the roles the ground truth says don't count score lower: QA automation
+# (sample 8) 0.39, technical support (sample 3) 0.34, accounting 0.31-0.37. The doc's
+# 0.55 fits; its 0.40 would sit 0.01 above the QA role, so partial starts at 0.42.
+RELEVANT_ROLE_MIN_COSINE: Final = 0.55  # -> factor 1.0
+PARTLY_RELEVANT_ROLE_MIN_COSINE: Final = 0.42  # -> factor 0.5
+PARTLY_RELEVANT_FACTOR: Final = 0.5

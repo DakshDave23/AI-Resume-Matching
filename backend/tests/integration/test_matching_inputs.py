@@ -1,6 +1,7 @@
 """The matcher's inputs, read back from what the pipeline stored."""
 
 import uuid
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -11,6 +12,7 @@ from app.models.enums import FileType, RequirementType, SkillAddedBy, SkillCateg
 from app.repositories.jobs import save_parsed_job
 from app.repositories.resumes import save_parsed_resume
 from app.repositories.skills import add_custom_skill, fill_skill_embeddings
+from app.services.matching.experience import experience_score
 from app.services.matching.inputs import load_candidate, load_job_skills, load_requirements
 from app.services.matching.semantic import semantic_score
 from app.services.matching.skills import Tier, match_skills, prepare_job
@@ -146,3 +148,19 @@ def test_semantic_inputs_load_in_jd_order_with_vectors(
     assert len(result.matches) == 14  # 16 minus the years and the degree sentence
     assert 0.0 <= result.score <= 1.0
     assert all(m.evidence for m in result.matches)
+
+
+def test_roles_load_with_dates_and_vectors(stored: tuple[Session, uuid.UUID, uuid.UUID]) -> None:
+    session, _, resume_id = stored
+    candidate = load_candidate(session, resume_id)
+
+    assert [(r.title, r.start, r.end, r.is_current) for r in candidate.roles] == [
+        ("Java Developer", date(2022, 6, 1), None, True),
+        ("Technical Support Engineer", date(2021, 6, 1), date(2022, 5, 1), False),
+    ]
+    assert all(r.vector is not None and not r.is_internship for r in candidate.roles)
+    assert (candidate.total_months, candidate.stated_months) == (66, None)  # from dates
+    profile = candidate.roles[0].vector
+    assert profile is not None
+    result = experience_score(profile, candidate.roles, today=AS_OF, min_years=4)
+    assert result.relevant_months >= 54  # the first role compared with itself: relevant
