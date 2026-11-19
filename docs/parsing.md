@@ -1,6 +1,6 @@
 # Parsing resumes and job descriptions
 
-How the backend turns an uploaded file into structured data: text extraction, sections, contact details, skills, work history, education, the JD parser, and the vectors stored for matching. Accuracy on the samples is in [parsing-accuracy.md](parsing-accuracy.md); scoring is described in the main [README](../README.md#how-matching-works).
+How the backend turns an uploaded file into structured data: text extraction, sections, contact details, skills, work history, education, the JD parser, and the vectors stored for matching. Accuracy on the samples is in [parsing-accuracy.md](parsing-accuracy.md); scoring is in [matching-algorithm.md](matching-algorithm.md).
 
 The code is in [`backend/app/services/extraction/`](../backend/app/services/extraction/) and [`backend/app/services/parsing/`](../backend/app/services/parsing/). Every rule below has unit tests in [`backend/tests/unit/`](../backend/tests/unit/).
 

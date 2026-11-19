@@ -1,8 +1,8 @@
 """Every scoring weight and threshold lives here (design doc §6.7).
 
 Thresholds belong to one embedding model: each model has its own similarity
-range, so changing EMBEDDING_MODEL means measuring these again (step 30 writes
-the calibration up in docs/).
+range, so changing EMBEDDING_MODEL means measuring these again. How they were
+measured, and how to recalibrate: docs/matching-algorithm.md, section 10.
 """
 
 from typing import Final

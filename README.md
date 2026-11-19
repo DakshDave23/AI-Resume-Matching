@@ -283,89 +283,32 @@ python -m app.services.parsing --jd ../sample_data/jds/backend_java_developer.tx
 
 ## How matching works
 
+The full method, every threshold with its measurement, and a worked example are in **[docs/matching-algorithm.md](docs/matching-algorithm.md)**.
+
 ```
 Score = 100 × Σ(wᵢ · Sᵢ) / Σ(wᵢ)   over active components
 ```
 
-Default weights: skills 0.40, semantic 0.30, experience 0.20, education 0.10. A component the JD doesn't ask for drops out and the rest are rescaled: experience without a minimum, education without a degree, skills without skills. With no years and no degree, skills and semantic count 0.57 and 0.43. "Or equivalent experience" halves education's weight first. Ties are broken by required-skill coverage, then relevant years.
+| Component | Sᵢ measures | Default weight |
+| --- | --- | --- |
+| Skills | Each JD skill (required 1.0, preferred 0.5) earns credit from the first tier that fires: exact or alias 1.0, a related skill of the same category (cosine ≥ 0.58) 0.5, inferred from an experience passage (cosine ≥ 0.43) 0.5, missing 0 | 0.40 |
+| Semantic similarity | The best resume passage for each JD requirement sentence, plus whole-document similarity, calibrated on the samples to 0–1 | 0.30 |
+| Relevant experience | Months in roles similar to the job (each month counted once, overlapping jobs never twice), against the JD's minimum | 0.20 |
+| Education | Degree level against the JD's (1.0 / 0.5 / 0.2), × 0.8 for a different field | 0.10 |
 
-Each resume is scored right after it is parsed, in the same transaction that counts it, so when a batch shows `completed` every resume in it is scored and ranked. Results are upserted on (job, resume), so scoring again never duplicates. Every result stores its weights and `scoring_version`. A scoring bug can't undo a good parse: scoring runs in its own savepoint.
+- A component the JD doesn't ask for drops out and the others are rescaled; "or equivalent experience" halves education's weight.
+- Ties are broken by required-skill coverage, then relevant years.
+- Every result stores its weights and `scoring_version`, and is upserted on (job, resume), so scoring again never duplicates.
 
-### Skill score
-
-Each JD skill (weight 1.0 if required, 0.5 if preferred) earns credit from the first tier that fires:
-
-| Tier | Rule | Credit | Example (sample 3 vs the Java JD) |
-| --- | --- | --- | --- |
-| Exact | The resume has the skill, written as its name | 1.0 | Java |
-| Alias | The same skill through an alias or a fuzzy match | 1.0 | REST → REST APIs |
-| Related | A resume skill of the same category with cosine ≥ 0.58 | 0.5 | MySQL → PostgreSQL (0.62), RabbitMQ → Kafka (0.59) |
-| Contextual | Not listed, but an experience or project passage matches the skill's name with cosine ≥ 0.43 | 0.5 | "Split a monolith into 8 independently deployed services" → Microservices (0.46) |
-| Missing | None of the above | 0 | AWS |
-
-Skill score = Σ weight × credit ÷ Σ weight. For sample 3 that is 4.75 ÷ 6.5 = 0.731, the design doc's worked example, and a test checks it with the real model.
-
-- **Years check:** when the JD asks for "5+ years of Java" and the resume shows fewer, the credit is multiplied by max(0.5, used ÷ required).
-- **Never equivalent:** Java/JavaScript, C/C#, C/C++ and React/React Native are never related, and a passage naming the other one never counts as context.
-- **Custom skills:** a skill the recruiter adds is in no extractor dictionary, so its name is looked up in the resume text.
-
-**Thresholds were measured, not taken from the doc.** The doc starts at 0.80 (related) and 0.55 (contextual). `all-MiniLM-L6-v2` never reaches those for real matches: MySQL/PostgreSQL scores 0.62. Over all 3 JDs × 14 samples, 0.58 separates the intended related pairs (Kafka/RabbitMQ 0.59 and up) from the wrong ones (Next.js/Node.js 0.55, Java/Python 0.54). 0.43 separates the one described-but-unnamed skill (0.46) from the closest wrong one (0.40). The margins are thin, so a test pins every indirect match across the samples. Both values live in [`scoring_config.py`](backend/app/services/matching/scoring_config.py); the calibration on the samples kept them (see [docs/ranking-results.md](docs/ranking-results.md)).
-
-### Semantic similarity
-
-```
-best_i   = max over resume passages of cos(requirement_i, passage)
-coverage = weighted mean of best_i            (required 1.0, preferred 0.5)
-raw      = 0.7 × coverage + 0.3 × cos(whole JD, whole resume)
-S_sem    = clip((raw − 0.30) ÷ (0.47 − 0.30), 0, 1)
-```
-
-- **Calibration (L = 0.30, H = 0.47).** Raw cosines sit in a narrow band. Following the design doc's rule, L is the average raw score of the "weak" sample/JD pairs (0.295) and H that of the "strong" ones (0.473). The doc's starting values (0.20 / 0.70) assume a wider-spread model.
-- **Result on the samples:** the accountant, the data scientist and the keyword stuffer score 0.00–0.03 against the Java JD. Strong pairs average 0.95 and weak ones 0.10, and in every JD each strong sample scores above every weak one. Good candidates bunch at the top, so this component mainly separates relevant from irrelevant; skills and experience do the fine ranking.
-- **Years and degree sentences are left out.** "4+ years of professional experience" matches any summary that states years: it scores 0.40 against a chartered accountant's. These sentences already count in the experience and education components.
-- **Requirement table:** each requirement keeps its best passage and a status: covered (≥ 0.40), partial (0.30–0.40) or not covered.
-
-### Relevant experience
-
-Total years can mislead: a QA engineer with 5 years who moved to backend 18 months ago has 1.5 years of backend experience.
-
-1. **Role profile:** the JD's title and responsibility sentences, embedded as one text.
-2. **Each role** (title + bullets) is compared with it: cosine ≥ 0.55 counts fully, 0.42–0.55 counts half, below that not at all.
-3. **Month by month,** each month counts once, at the best factor of any role active then, so overlapping jobs are never double counted. Internships don't count.
-4. **Relevant years ÷ the JD's minimum,** capped at 1. A JD without a minimum leaves this component out. Being above the JD's maximum is shown but never penalised: such a penalty works as a proxy for age.
-
-Against the Java JD, every figure in the ground truth comes out exactly: sample 8 has 1.5 relevant years (its QA role scores 0.39), Candidate A 4.5 (support role 0.34), sample 4 2.0 (internship excluded). The design doc's partial cut-off of 0.40 would have sat 0.01 above the QA role, so it is 0.42.
-
-### Education
-
-| Highest degree vs the JD's | Score |
-| --- | --- |
-| Equal or higher | 1.0 |
-| One level below | 0.5 |
-| Two or more below, or none found | 0.2: not 0, since the parser may have missed it |
-
-- **Field of study:** when the JD names fields and none of the candidate's degrees is in one of them, the score is multiplied by 0.8. "Same field" means an equivalence group (Computer Science ≈ IT ≈ Computer Engineering ≈ Computer Applications …; Electronics ≈ Electrical; Mathematics ≈ Statistics; Commerce ≈ Accounting ≈ Finance), or names with cosine ≥ 0.6. A degree with no field written is not penalised.
-- **"Or equivalent experience"** in the JD halves education's weight, and relevant years ≥ the JD's minimum + 2 stand in for the degree.
-- A JD that names no degree leaves this component out.
-
-Against the Java JD (a Bachelor's in CS or IT), sample 11's Diploma in Computer Engineering scores 0.5. Samples 8 (Electronics), 12 (Statistics) and 13 (Accounting) meet the level but not the field: 0.8.
-
-### Explanations
-
-Every score comes with reasons built from the same numbers by fixed templates, with no LLM, so they always agree with the score:
+**Explanations** are built from the same numbers by fixed templates, with no LLM:
 
 - **Verdict:** 80+ strong, 65–79 good, 50–64 partial, below 50 weak.
-- **Breakdown:** points earned against points available per component. They add up to the match % exactly as displayed: rounding is distributed so the parts sum to the total.
-- **Strengths and gaps,** each with its points. Sample 3 (Candidate A) against the Java JD:
-  - Microservices not listed, but inferred from the "Java Developer | Contoso Payments" role (−3.1 points).
-  - PostgreSQL credited at half: related skill MySQL found (−3.1 points).
-  - Missing preferred skill AWS (−3.1 points).
-  - Kafka credited at half: related skill RabbitMQ found (−1.5 points).
+- **Breakdown:** points earned against points available per component, adding up to the match % exactly as displayed.
+- **Strengths and gaps,** each with its points and the resume evidence behind it.
 
-  That is the design doc's worked example exactly: 10.8 points lost on skills.
-- **Data-quality notes:** for example "Education not found; check the original file", and experience above the JD's maximum (shown, never penalised).
+**Worked example** (sample 3, Candidate A, against the Backend Java JD): skills 4.75 ÷ 6.5 = 0.731 (Microservices inferred, PostgreSQL and Kafka only related, AWS missing), semantic 1.0, relevant experience 4.5 of 4 years = 1.0, education 1.0. That gives **89.2, strong match**, with all 10.8 lost points on skills: −3.1 each for Microservices, PostgreSQL and AWS, and −1.5 for Kafka. This is the design doc's example exactly, and a test checks it with the real model.
 
-_TODO: link to `docs/matching-algorithm.md`._
+**Thresholds were measured, not taken from the doc.** `all-MiniLM-L6-v2` has a narrower similarity range than the design doc assumed (MySQL/PostgreSQL scores 0.62, not 0.80+), so each threshold was set on the samples. The measurements sit next to each value in [`scoring_config.py`](backend/app/services/matching/scoring_config.py).
 
 ## Database
 
