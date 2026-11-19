@@ -149,6 +149,8 @@ npm run lint && npm run typecheck && npm test && npm run build
 
 The API address comes from `VITE_API_BASE_URL` in the repo-root `.env` (default `http://localhost:8000/api/v1`). The header shows the API's state from `/health`: "Model loading…" for the first seconds after the backend starts, then "API ready".
 
+**Uploading resumes** (`/jobs/:jobId/upload`): drop or choose up to 50 PDF/DOCX files of at most 5 MB each. Files that can't be sent are listed with the reason before anything is uploaded. After the upload, the page polls `/batches/{id}` every 2 seconds and shows each file's status (queued, parsing, parsed, failed with the reason) until the batch finishes. The batch id is kept in the URL (`?batch=`), so a reload keeps showing the progress.
+
 **API types** are generated, never written by hand. After changing a backend route or schema, run `make types`. It writes the OpenAPI schema to `frontend/openapi.json` and regenerates `frontend/src/types/api.ts` with `openapi-typescript`, so the frontend's type check catches any mismatch.
 
 ## Sample data
