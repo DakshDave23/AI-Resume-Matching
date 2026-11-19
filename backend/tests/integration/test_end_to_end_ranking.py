@@ -4,12 +4,13 @@ Create the Java job, upload all 15 samples, poll until done, fetch the rankings.
 persona 15 failed with a reason, the strong personas fill the top 4, persona 13 ranks
 last.
 
-The top-4 check fails today: persona 11 ("good": every skill matched exactly, but a
-diploma) ranks 4th at 91.9, above persona 3 ("strong": three skills related or
-inferred) at 89.2. That follows from the doc's own default weights (the diploma costs
-5 points, the indirect skills 10.8). Step 30 calibrates against these labels; until
-then the check is marked as an expected failure. It is strict, so it starts failing
-the moment it passes, as a reminder to remove the mark.
+The top-4 check is a known, recorded miss: persona 11 ("good": every skill matched
+exactly, but a diploma) ranks 4th at 91.9, above persona 3 ("strong": three skills
+related or inferred) at 89.2. Under the doc's default weights the diploma costs 5
+points and the indirect skills 10.8. Calibration (step 30, docs/ranking-results.md)
+found that only raising education's weight fixes it, and kept the doc's weights rather
+than tune them to one pair of samples. The mark is strict: if a later change makes the
+check pass, the test fails until the mark is removed.
 """
 
 import time
@@ -120,7 +121,7 @@ def test_rankings_are_in_score_order(ranked: dict[str, Any]) -> None:
 @pytest.mark.xfail(
     strict=True,
     reason="Persona 11 ('good', diploma) outranks persona 3 ('strong') under the doc's "
-    "default weights; step 30 calibrates against the labels",
+    "default weights, which calibration kept; see docs/ranking-results.md",
 )
 def test_the_strong_personas_fill_the_top_4(ranked: dict[str, Any]) -> None:
     top4 = {PERSONA[name] for name in ranked["order"][:4]}

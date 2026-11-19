@@ -33,7 +33,7 @@ DB_USER ?= resume
 DB_NAME ?= resume_matcher
 
 .DEFAULT_GOAL := help
-.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples eval-parsing install dev test lint format typecheck check
+.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples eval-parsing eval-ranking install dev test lint format typecheck check
 
 help:  ## List targets
 	@$(LIST_TARGETS)
@@ -66,6 +66,9 @@ samples:  ## Regenerate sample resumes and ground_truth.json from the personas
 
 eval-parsing:  ## Measure parsing accuracy on the samples; saves docs/parsing-accuracy.md
 	$(BACKEND_PY) scripts/evaluate_parsing.py --out docs/parsing-accuracy.md
+
+eval-ranking:  ## Measure ranking quality on the samples; saves docs/ranking-results.md
+	$(BACKEND_PY) scripts/evaluate_ranking.py --out docs/ranking-results.md
 
 # --- Backend ----------------------------------------------------------------
 install:  ## Create the backend venv and install dependencies

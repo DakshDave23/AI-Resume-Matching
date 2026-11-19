@@ -94,6 +94,7 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 | `make seed` | `backend/.venv/Scripts/python scripts/seed_skills.py` |
 | `make samples` | `backend/.venv/Scripts/python scripts/generate_samples.py` |
 | `make eval-parsing` | `backend/.venv/Scripts/python scripts/evaluate_parsing.py --out docs/parsing-accuracy.md` |
+| `make eval-ranking` | `backend/.venv/Scripts/python scripts/evaluate_ranking.py --out docs/ranking-results.md` |
 | `make install` | see the backend steps below |
 | `make dev` | `cd backend && uvicorn app.main:app --reload` |
 | `make check` | lint + type-check + tests (see below) |
@@ -417,7 +418,21 @@ Measured by `make eval-parsing` on the 14 text samples and 3 JDs against `sample
 
 The scanned PDF (persona 15) is rejected with `scanned_pdf`, as expected. **Read these as an upper bound:** the parsers were developed against these same samples. The parser unit tests cover formats the samples don't have, and real resumes will be messier.
 
-_TODO: ranking quality, keyword-only ablation, batch timing._
+### Ranking quality
+
+Measured by `make eval-ranking`: every text sample scored against every sample JD with the real model. The full report, with each ranking, is in [docs/ranking-results.md](docs/ranking-results.md).
+
+| JD | Spearman (match % vs expected tier) | Precision at k | Last place |
+| --- | --- | --- | --- |
+| Backend Java | **0.93** (goal ≥ 0.8) | 0.75 (k = 4) | sample 13, the accountant |
+| Data Scientist | 0.57 | 1.00 (k = 1) | sample 11 |
+| Frontend React | 0.45 | 1.00 (k = 1) | sample 13 |
+
+- **The miss:** for the Java JD, sample 11 ("good": every skill an exact match, but only a diploma) ranks 4th, 2.7 points above sample 3 ("strong": two skills only related, one inferred). Under the default weights the diploma costs 5 points and the indirect skills 10.8. Only raising education's weight to 0.2 would change that. The design doc's 40/30/20/10 were kept rather than tuned to one pair of samples.
+- **The other two JDs** each have one strong sample and 12–13 equally "weak" ones, so Spearman there mostly measures the order among the weak. The strong sample ranks first, by 57 points or more.
+- **Keyword-only ablation** (semantic weight 0, related and inferred skills off): the keyword stuffer (sample 7) climbs from 11th to 6th. Sample 3, whose skills are partly described rather than listed, loses 15.6 points. Sample 2's synonyms are all in the alias dictionary, so it stays put.
+- **Stability:** partial credit at 0.4 or 0.6 instead of 0.5 gives identical rankings. Moving any weight by ±0.1 keeps the same top 3, apart from the order of two candidates 0.5 points apart, and except lowering education, which lets sample 11 into the top 3.
+- **Speed:** the 14 readable samples are extracted, parsed, embedded and scored in about 1–4 seconds on a laptop CPU, once the model is loaded.
 
 ## Project structure
 
