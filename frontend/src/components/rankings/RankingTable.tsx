@@ -15,7 +15,28 @@ import { ScoreBar } from "@/components/rankings/ScoreBar";
 import { SkillChips } from "@/components/rankings/SkillChips";
 import { displayName, formatYears } from "@/lib/rankings";
 
-const column = createColumnHelper<RankingRow>();
+/** A row as shown: during a weights preview it also carries its saved rank. */
+export type TableRow = RankingRow & { previous_rank?: number | null };
+
+const column = createColumnHelper<TableRow>();
+
+function Movement({ from, to }: { from: number | null | undefined; to: number | null }) {
+  if (from == null || to === null || from === to) return null;
+  const up = to < from;
+  const by = Math.abs(from - to);
+  return (
+    <span
+      className={up ? "ml-1 text-xs text-green-700" : "ml-1 text-xs text-destructive"}
+      title={`Saved rank ${from}`}
+    >
+      {up ? "▲" : "▼"}
+      {by}
+      <span className="sr-only">
+        {up ? " up" : " down"} from {from}
+      </span>
+    </span>
+  );
+}
 
 /** The table's columns; links to the candidate page need the job id. */
 function columnsFor(jobId: string) {
@@ -24,7 +45,12 @@ function columnsFor(jobId: string) {
       id: "rank",
       header: "Rank",
       sortUndefined: "last",
-      cell: (c) => <span className="tabular-nums">{c.getValue() ?? "–"}</span>,
+      cell: ({ row: { original: r } }) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {r.rank ?? "–"}
+          <Movement from={r.previous_rank} to={r.rank} />
+        </span>
+      ),
     }),
     column.accessor((r) => displayName(r).toLowerCase(), {
       id: "candidate",
@@ -95,7 +121,7 @@ function columnsFor(jobId: string) {
  * The ranked candidates, in the API's order until a column header is clicked.
  * Sorting is done here on the rows the API returned, so it never changes who is shown.
  */
-export function RankingTable({ jobId, rows }: { jobId: string; rows: RankingRow[] }) {
+export function RankingTable({ jobId, rows }: { jobId: string; rows: TableRow[] }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const columns = useMemo(() => columnsFor(jobId), [jobId]);
   // React Compiler can't memoise TanStack Table v8; this app doesn't use the compiler.

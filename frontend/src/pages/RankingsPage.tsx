@@ -1,17 +1,28 @@
+import { Download, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
-import type { RankingFilters } from "@/api/rankings";
-import { RankingTable } from "@/components/rankings/RankingTable";
+import { exportUrl, type RankingFilters } from "@/api/rankings";
+import { RankingTable, type TableRow } from "@/components/rankings/RankingTable";
 import { SummaryCards } from "@/components/rankings/SummaryCards";
+import { WeightSliders } from "@/components/rankings/WeightSliders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useJob } from "@/hooks/useJobs";
-import { useRankings, useRescore } from "@/hooks/useRankings";
+import { useRankings, useRescore, useSaveWeights } from "@/hooks/useRankings";
 import { summarize } from "@/lib/rankings";
+import {
+  DEFAULT_WEIGHTS,
+  EQUIVALENT_EXPERIENCE_FACTOR,
+  rerank,
+  sameWeights,
+  toFractions,
+  toSliders,
+  type Weights,
+} from "@/lib/weights";
 
 const MIN_SCORES = [0, 50, 65, 80];
 const SELECT =
@@ -21,7 +32,11 @@ function errorText(error: unknown): string {
   return error instanceof ApiError ? error.message : "The ranking couldn't be loaded.";
 }
 
-/** Wizard step 3: summary cards over the ranked table, with search and filters. */
+/**
+ * Wizard step 3: summary cards over the ranked table, with search, filters and weight sliders.
+ * Search and skill are filtered by the API. The minimum match is applied here, to the score
+ * on screen, so it also holds while the sliders preview new weights.
+ */
 export function RankingsPage() {
   const { jobId = "" } = useParams();
   const { data: job } = useJob(jobId);
@@ -29,16 +44,34 @@ export function RankingsPage() {
   const [search, setSearch] = useState("");
   const [minScore, setMinScore] = useState(0);
   const [skill, setSkill] = useState("");
-  const filters: RankingFilters = { search: useDebouncedValue(search), minScore, skill };
+  const debouncedSearch = useDebouncedValue(search);
   const filtered = search.trim() !== "" || minScore > 0 || skill !== "";
 
   const everyone = useRankings(jobId); // the cards always describe the whole ranking
-  const shown = useRankings(jobId, filters);
+  const shown = useRankings(jobId, { search: debouncedSearch, skill });
   const rescore = useRescore(jobId);
+  const save = useSaveWeights(jobId);
 
-  const all = everyone.data?.rows ?? [];
-  const rows = shown.data?.rows ?? [];
-  const stale = all.some((r) => r.is_stale);
+  // Weights: the sliders' draft previews a new ranking until it is saved.
+  const [showWeights, setShowWeights] = useState(false);
+  const [draft, setDraft] = useState<Weights | null>(null);
+  const saved = job ? toSliders(job.scoring_weights) : DEFAULT_WEIGHTS;
+  const weights = draft ?? saved;
+  const previewing = draft !== null && !sameWeights(draft, saved);
+  const educationFactor = job?.accepts_equivalent_experience ? EQUIVALENT_EXPERIENCE_FACTOR : 1;
+
+  const stored = everyone.data?.rows ?? [];
+  const all: TableRow[] = previewing ? rerank(stored, weights, educationFactor) : stored;
+  const shownIds = new Set((shown.data?.rows ?? []).map((r) => r.resume_id));
+  const rows = (
+    previewing ? all.filter((r) => shownIds.has(r.resume_id)) : (shown.data?.rows ?? [])
+  ).filter((r) => r.match_percent >= minScore);
+  const stale = stored.some((r) => r.is_stale);
+  const exportFilters: RankingFilters = { search: debouncedSearch, minScore, skill };
+
+  function saveWeights() {
+    save.mutate(toFractions(weights), { onSuccess: () => setDraft(null) });
+  }
 
   function clearFilters() {
     setSearch("");
@@ -53,7 +86,20 @@ export function RankingsPage() {
           <p className="text-sm text-muted-foreground">Step 3 of 3 · Rankings</p>
           <h1 className="mt-1 text-2xl font-semibold">{job?.title ?? "Rankings"}</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            aria-expanded={showWeights}
+            aria-controls="weights-panel"
+            onClick={() => setShowWeights((open) => !open)}
+          >
+            <SlidersHorizontal aria-hidden /> Weights
+          </Button>
+          <Button variant="outline" asChild>
+            <a href={exportUrl(jobId, exportFilters)} download>
+              <Download aria-hidden /> Export CSV
+            </a>
+          </Button>
           <Button variant="outline" asChild>
             <Link to={`/jobs/${jobId}`}>Requirements</Link>
           </Button>
@@ -71,6 +117,26 @@ export function RankingsPage() {
         <div className="h-24 animate-pulse rounded-lg bg-muted" aria-label="Loading summary" />
       ) : (
         <SummaryCards summary={summarize(all)} />
+      )}
+
+      {showWeights && (
+        <div id="weights-panel">
+          <WeightSliders
+            weights={weights}
+            onChange={setDraft}
+            onSave={saveWeights}
+            onReset={() => setDraft({ ...DEFAULT_WEIGHTS })}
+            dirty={previewing}
+            saving={save.isPending}
+            educationHalved={educationFactor < 1}
+            error={save.isError ? errorText(save.error) : null}
+          />
+          {previewing && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              The CSV export uses the saved weights.
+            </p>
+          )}
+        </div>
       )}
 
       {stale && (
