@@ -33,19 +33,29 @@ DB_USER ?= resume
 DB_NAME ?= resume_matcher
 
 .DEFAULT_GOAL := help
-.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples eval-parsing eval-ranking install dev test lint format typecheck check web-install web web-check types
+.PHONY: help up down logs db-up db-down db-reset db-logs db-shell migrate seed samples eval-parsing eval-ranking install dev test lint format typecheck check web-install web web-check types
 
 help:  ## List targets
 	@$(LIST_TARGETS)
+
+# --- Everything in Docker -------------------------------------------------------
+up:  ## Build and start db, backend and web; the app is on http://localhost:8080
+	$(COMPOSE) up --build -d --wait
+
+down:  ## Stop every container (keeps data and uploads)
+	$(COMPOSE) down
+
+logs:  ## Follow the logs of every container
+	$(COMPOSE) logs -f
 
 # --- Database ---------------------------------------------------------------
 db-up:  ## Start Postgres + pgvector and wait until it is healthy
 	$(COMPOSE) up -d --wait db
 
 db-down:  ## Stop Postgres (keeps data)
-	$(COMPOSE) down
+	$(COMPOSE) stop db
 
-db-reset:  ## Stop Postgres and DELETE all data, then start fresh
+db-reset:  ## Stop everything, DELETE all data and uploads, then start a fresh Postgres
 	$(COMPOSE) down -v
 	$(COMPOSE) up -d --wait db
 

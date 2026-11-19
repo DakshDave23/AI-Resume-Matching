@@ -60,13 +60,19 @@ _TODO: "why" column._
 
 ## Quick start
 
-_TODO._ Target flow:
+Needs Docker (Docker Desktop on Windows and macOS).
 
 ```bash
-cp .env.example .env
-docker compose up --build
-# open http://localhost:5173 and click "Load sample data"
+cp .env.example .env          # Windows: copy .env.example .env
+docker compose up --build     # or: make up
 ```
+
+Open **http://localhost:8080** and click **Load sample data**. The 15 sample resumes parse live, then "Next: see the rankings" opens the ranked table. The API's docs are at http://localhost:8000/docs.
+
+- **First build:** a few minutes. It downloads Python, CPU-only PyTorch and the embedding model; the model is baked into the image, so the containers never download anything.
+- **Each start:** the backend applies the database migrations and seeds the skills taxonomy (both safe to re-run). The model then loads in about 20 seconds; until then the header says "Model loading…".
+- **Services:** `db` (Postgres 16 + pgvector), `backend` (FastAPI, one worker) and `web` (nginx serving the app and forwarding `/api/` to the backend, so the browser uses one origin). All ports are bound to 127.0.0.1. Set `WEB_PORT`, `API_PORT` or `POSTGRES_PORT` in `.env` to move them.
+- **Data:** the database and the uploaded files live in the `pgdata` and `uploads` volumes. `docker compose down` keeps them; `docker compose down -v` deletes them.
 
 ## Local development
 
@@ -76,8 +82,8 @@ docker compose up --build
 cp .env.example .env                   # once; Windows: copy .env.example .env
 docker compose up -d --wait db         # start and wait until healthy
 docker compose exec db psql -U resume -d resume_matcher   # SQL shell
-docker compose down                    # stop (keeps data)
-docker compose down -v                 # stop and DELETE all data
+docker compose stop db                 # stop (keeps data)
+docker compose down -v                 # stop everything and DELETE all data
 ```
 
 Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled automatically on first start.
@@ -86,8 +92,11 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 
 | Target | Plain command |
 | --- | --- |
+| `make up` | `docker compose up --build -d --wait` (everything, on http://localhost:8080) |
+| `make down` | `docker compose down` |
+| `make logs` | `docker compose logs -f` |
 | `make db-up` | `docker compose up -d --wait db` |
-| `make db-down` | `docker compose down` |
+| `make db-down` | `docker compose stop db` |
 | `make db-reset` | `docker compose down -v` then `make db-up` |
 | `make db-shell` | `docker compose exec db psql -U resume -d resume_matcher` |
 | `make migrate` | `cd backend && alembic upgrade head` |

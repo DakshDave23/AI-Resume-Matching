@@ -1,9 +1,12 @@
-# Local stack. Step 3: database only. Backend and frontend services are added in step 38.
+# The whole app in one command:
 #
-#   docker compose up -d db      start Postgres + pgvector
-#   docker compose down          stop it (data is kept in the pgdata volume)
-#   docker compose down -v       stop it AND delete all data
+#   docker compose up --build    build and start db, backend and web; open http://localhost:8080
+#   docker compose up -d db      only Postgres + pgvector, for local development (make dev / make web)
+#   docker compose down          stop everything (data and uploads are kept in volumes)
+#   docker compose down -v       stop everything AND delete all data and uploads
 #
+# The first build downloads Python, PyTorch (CPU) and the embedding model: allow a few
+# minutes. On the first start the backend applies the migrations and seeds the skills.
 # Values come from .env (copy .env.example); the defaults below match it.
 name: resume-matcher
 
@@ -28,5 +31,47 @@ services:
       timeout: 3s
       retries: 10
 
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: resume-matcher-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Inside the compose network the database is "db", not 127.0.0.1.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-resume}:${POSTGRES_PASSWORD:-resume}@db:5432/${POSTGRES_DB:-resume_matcher}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: http://localhost:${WEB_PORT:-8080},http://localhost:5173
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-5}
+      MAX_BATCH_FILES: ${MAX_BATCH_FILES:-50}
+      PHONE_DEFAULT_REGION: ${PHONE_DEFAULT_REGION:-IN}
+    ports:
+      # The API directly, for its docs at http://localhost:8000/docs.
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    volumes:
+      - uploads:/app/storage
+    healthcheck:
+      # 200 once the database answers and the model is loaded (503 while it loads).
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 120s
+      retries: 6
+
+  web:
+    build:
+      context: frontend
+    image: resume-matcher-web
+    restart: unless-stopped
+    depends_on:
+      # Not "healthy": the page opens at once and shows "Model loading…" until the API is ready.
+      - backend
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:8080"
+
 volumes:
   pgdata:
+  uploads:

@@ -1,0 +1,11 @@
+# Build context for backend/Dockerfile (the repo root). An allowlist: only what the image
+# needs gets sent, so .env, the virtualenv, uploads and node_modules never reach Docker.
+*
+!backend/pyproject.toml
+!backend/alembic.ini
+!backend/alembic/
+!backend/app/
+!scripts/seed_skills.py
+!sample_data/jds/
+!sample_data/resumes/
+**/__pycache__
