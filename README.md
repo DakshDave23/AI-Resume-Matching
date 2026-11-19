@@ -98,6 +98,10 @@ Postgres listens on `127.0.0.1:5432` only. The `vector` extension is enabled aut
 | `make install` | see the backend steps below |
 | `make dev` | `cd backend && uvicorn app.main:app --reload` |
 | `make check` | lint + type-check + tests (see below) |
+| `make web-install` | `cd frontend && npm ci` |
+| `make web` | `cd frontend && npm run dev` |
+| `make web-check` | frontend lint, format check, type-check, tests and build |
+| `make types` | `backend/.venv/Scripts/python scripts/export_openapi.py`, then `cd frontend && npm run generate:types` |
 
 **Backend** (Python 3.12):
 
@@ -133,6 +137,19 @@ Lint, type-check and test:
 ruff check . && ruff format --check . && mypy app tests && pytest
 pytest -m "not model"                  # skip the tests that load the real embedding model
 ```
+
+**Frontend** (Node 22.12+; React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query):
+
+```bash
+cd frontend
+npm ci                                 # exact versions from package-lock.json
+npm run dev                            # http://localhost:5173 (start the backend first)
+npm run lint && npm run typecheck && npm test && npm run build
+```
+
+The API address comes from `VITE_API_BASE_URL` in the repo-root `.env` (default `http://localhost:8000/api/v1`). The header shows the API's state from `/health`: "Model loading…" for the first seconds after the backend starts, then "API ready".
+
+**API types** are generated, never written by hand. After changing a backend route or schema, run `make types`. It writes the OpenAPI schema to `frontend/openapi.json` and regenerates `frontend/src/types/api.ts` with `openapi-typescript`, so the frontend's type check catches any mismatch.
 
 ## Sample data
 

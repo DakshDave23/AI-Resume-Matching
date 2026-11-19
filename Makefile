@@ -33,7 +33,7 @@ DB_USER ?= resume
 DB_NAME ?= resume_matcher
 
 .DEFAULT_GOAL := help
-.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples eval-parsing eval-ranking install dev test lint format typecheck check
+.PHONY: help db-up db-down db-reset db-logs db-shell migrate seed samples eval-parsing eval-ranking install dev test lint format typecheck check web-install web web-check types
 
 help:  ## List targets
 	@$(LIST_TARGETS)
@@ -90,3 +90,16 @@ typecheck:  ## Run mypy
 	cd backend && $(MYPY) app tests ../scripts
 
 check: lint typecheck test  ## Everything CI runs
+
+# --- Frontend ---------------------------------------------------------------
+web-install:  ## Install the frontend's exact dependencies (npm ci)
+	cd frontend && npm ci
+
+web:  ## Run the frontend with hot reload on http://localhost:5173
+	cd frontend && npm run dev
+
+web-check:  ## Lint, format-check, type-check, test and build the frontend
+	cd frontend && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build
+
+types:  ## Regenerate frontend/src/types/api.ts from the API's OpenAPI schema
+	$(BACKEND_PY) scripts/export_openapi.py && cd frontend && npm run generate:types
