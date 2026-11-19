@@ -170,3 +170,16 @@ def test_a_scoring_failure_keeps_the_parse(
     )
     assert parsed == 14  # parsing stood
     assert results(seeded_session, job_id) == []  # scoring can be rerun later
+
+
+def test_stored_explanations_add_up_to_the_stored_score(
+    client: TestClient, seeded_session: Session
+) -> None:
+    for row in results(seeded_session, run_job(client, JAVA_JD)):
+        explanation = row.explanation
+        earned = sum(p["earned"] for p in explanation["breakdown"])
+        assert earned == pytest.approx(round(float(row.overall_score), 1))
+        assert explanation["verdict"] in {"strong", "good", "partial", "weak"}
+        assert explanation["summary"].startswith(explanation["verdict"].capitalize())
+        assert all(g["impact"] < 0 for g in explanation["gaps"])
+        assert "details" in explanation  # the step-26 details are kept alongside

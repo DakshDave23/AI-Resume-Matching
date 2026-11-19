@@ -136,3 +136,9 @@ EQUIVALENT_EXPERIENCE_EXTRA_YEARS: Final = 2.0
 # so old and new scores are never compared as if they were the same scale.
 SCORING_VERSION: Final = "v1.0"
 COMPONENTS: Final = ("skills", "semantic", "experience", "education")
+
+# --- Explanation (§7) -----------------------------------------------------------------
+
+# Verdict from the match %: (lowest score, verdict), checked in order.
+VERDICT_BANDS: Final = ((80.0, "strong"), (65.0, "good"), (50.0, "partial"), (0.0, "weak"))
+TOP_ITEMS: Final = 5  # strengths and gaps shown on the candidate page

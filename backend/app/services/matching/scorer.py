@@ -26,11 +26,18 @@ from app.models.enums import RequirementCategory
 from app.services.matching import scoring_config as config
 from app.services.matching.education import EducationScore, education_score
 from app.services.matching.experience import ExperienceScore, experience_score, role_profile
-from app.services.matching.inputs import CandidateData, load_job_skills, load_requirements
+from app.services.matching.inputs import (
+    CandidateData,
+    job_skills_from_parse,
+    load_job_skills,
+    load_requirements,
+    requirements_from_parse,
+)
 from app.services.matching.semantic import RequirementInput, SemanticScore, semantic_score
 from app.services.matching.skills import PreparedJob, SkillScore, match_skills, prepare_job
 from app.services.nlp.embedder import TextEncoder
-from app.services.nlp.vectors import Vector
+from app.services.nlp.vectors import JobVectors, Vector
+from app.services.parsing.jd_parser import JobParse
 
 
 @dataclass(frozen=True)
@@ -165,3 +172,31 @@ def score_candidate(
         education_factor=education.weight_factor,
     )
     return MatchOutcome(combined, skills, semantic, experience, education, job.weights)
+
+
+def scoring_job_from_parse(
+    parsed: JobParse,
+    vectors: JobVectors,
+    skill_vecs: dict[str, Vector],
+    encoder: TextEncoder,
+    *,
+    weights: Mapping[str, float] = config.DEFAULT_WEIGHTS,
+) -> ScoringJob:
+    """What `load_scoring_job` would build once this JD is saved (tests, evaluation)."""
+    requirements = requirements_from_parse(parsed, vectors.requirements)
+    responsibilities = [
+        r.text for r in requirements if r.category == RequirementCategory.RESPONSIBILITY
+    ]
+    return ScoringJob(
+        job_id=uuid.UUID(int=0),
+        weights=dict(weights),
+        skills=prepare_job(job_skills_from_parse(parsed, skill_vecs), encoder),
+        requirements=requirements,
+        job_vector=vectors.document,
+        profile=role_profile(parsed.title or "", responsibilities, encoder),
+        min_years=parsed.min_experience_years,
+        max_years=parsed.max_experience_years,
+        required_level=parsed.degree_level,
+        required_fields=parsed.fields_of_study,
+        accepts_equivalent_experience=parsed.accepts_equivalent_experience,
+    )

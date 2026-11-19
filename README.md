@@ -340,6 +340,21 @@ Against the Java JD, every figure in the ground truth comes out exactly: sample 
 
 Against the Java JD (a Bachelor's in CS or IT), sample 11's Diploma in Computer Engineering scores 0.5. Samples 8 (Electronics), 12 (Statistics) and 13 (Accounting) meet the level but not the field: 0.8.
 
+### Explanations
+
+Every score comes with reasons built from the same numbers by fixed templates, with no LLM, so they always agree with the score:
+
+- **Verdict:** 80+ strong, 65–79 good, 50–64 partial, below 50 weak.
+- **Breakdown:** points earned against points available per component. They add up to the match % exactly as displayed: rounding is distributed so the parts sum to the total.
+- **Strengths and gaps,** each with its points. Sample 3 (Candidate A) against the Java JD:
+  - Microservices not listed, but inferred from the "Java Developer | Contoso Payments" role (−3.1 points).
+  - PostgreSQL credited at half: related skill MySQL found (−3.1 points).
+  - Missing preferred skill AWS (−3.1 points).
+  - Kafka credited at half: related skill RabbitMQ found (−1.5 points).
+
+  That is the design doc's worked example exactly: 10.8 points lost on skills.
+- **Data-quality notes:** for example "Education not found; check the original file", and experience above the JD's maximum (shown, never penalised).
+
 _TODO: link to `docs/matching-algorithm.md`._
 
 ## Database

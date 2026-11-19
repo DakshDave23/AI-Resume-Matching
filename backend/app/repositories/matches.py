@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.models import MatchResult
 from app.services.matching import scoring_config as config
+from app.services.matching.explainer import explain
 from app.services.matching.scorer import MatchOutcome
 from app.services.matching.skills import Tier
 
@@ -135,8 +136,7 @@ def upsert_match(
         "matched_skills": data["matched_skills"],
         "missing_skills": data["missing_skills"],
         "requirement_matches": data["requirement_matches"],
-        # The explainer (step 27) adds summary, positives, negatives and points lost.
-        "explanation": {"details": data["details"]},
+        "explanation": explain(outcome) | {"details": data["details"]},
         "weights_used": outcome.weights,
         "scoring_version": config.SCORING_VERSION,
         "rank": None,

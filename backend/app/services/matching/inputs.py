@@ -26,7 +26,7 @@ from app.services.matching.semantic import RequirementInput
 from app.services.matching.skills import CandidateSkillInput, JobSkillInput, Passage
 from app.services.nlp.embedder import TextEncoder
 from app.services.nlp.taxonomy import get_taxonomy
-from app.services.nlp.vectors import Vector
+from app.services.nlp.vectors import ResumeVectors, Vector
 from app.services.parsing.chunker import Chunk
 from app.services.parsing.experience import is_internship_title
 from app.services.parsing.jd_parser import JobParse
@@ -240,3 +240,25 @@ def degrees_from_parse(parsed: ParsedResume) -> list[DegreeInput]:
         DegreeInput(e.degree, int(e.level) if e.level is not None else None, e.field)
         for e in parsed.education.entries
     ]
+
+
+def candidate_data_from_parse(
+    parsed: ParsedResume,
+    chunks: Sequence[Chunk],
+    vectors: ResumeVectors,
+    skill_vecs: dict[str, Vector],
+    job_skills: Sequence[JobSkillInput],
+) -> CandidateData:
+    """What `load_candidate` would return once this resume is saved (tests, evaluation)."""
+    skills, passages = candidate_from_parse(parsed, chunks, vectors.chunks, skill_vecs, job_skills)
+    work = parsed.work
+    return CandidateData(
+        skills=skills,
+        passages=passages,
+        text="",
+        vector=vectors.document,
+        roles=roles_from_parse(parsed, vectors.roles),
+        total_months=work.total_months,
+        stated_months=work.total_months if work.source == "summary_statement" else None,
+        degrees=degrees_from_parse(parsed),
+    )

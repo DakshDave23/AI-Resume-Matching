@@ -44,6 +44,7 @@ class EducationScore:
     weight_factor: float  # 0.5 when the JD accepts equivalent experience
     required_level: int | None
     candidate_level: int | None  # the highest found; None when no degree was found
+    candidate_degree: str | None  # as written, e.g. "B.Tech"
     level_score: float | None
     required_fields: tuple[str, ...]
     field_result: FieldResult
@@ -108,8 +109,9 @@ def education_score(
     weight_factor = (
         config.EQUIVALENT_EXPERIENCE_WEIGHT_FACTOR if accepts_equivalent_experience else 1.0
     )
-    levels = [d.level for d in degrees if d.level is not None]
-    candidate_level = max(levels) if levels else None
+    leveled = [d for d in degrees if d.level is not None]
+    highest = max(leveled, key=lambda d: d.level or 0) if leveled else None
+    candidate_level = highest.level if highest else None
     # Fields of real degrees (diploma and up), highest first.
     with_field = sorted(
         (d for d in degrees if d.field and (d.level or 0) >= DegreeLevel.DIPLOMA),
@@ -147,6 +149,7 @@ def education_score(
         weight_factor=weight_factor,
         required_level=required_level,
         candidate_level=candidate_level,
+        candidate_degree=highest.degree if highest else None,
         level_score=level,
         required_fields=tuple(required_fields),
         field_result=field_result,
