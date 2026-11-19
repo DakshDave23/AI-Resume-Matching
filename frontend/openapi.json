@@ -2041,6 +2041,11 @@
             "title": "Top Matched Skills",
             "description": "Up to 5, full credit first"
           },
+          "matched_skill_count": {
+            "type": "integer",
+            "title": "Matched Skill Count",
+            "description": "All matched skills, at any tier"
+          },
           "missing_required_count": {
             "type": "integer",
             "title": "Missing Required Count"
@@ -2049,6 +2054,22 @@
             "type": "boolean",
             "title": "Is Stale",
             "description": "The job's requirements changed since this was scored"
+          },
+          "parse_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Confidence"
+          },
+          "needs_review": {
+            "type": "boolean",
+            "title": "Needs Review",
+            "description": "Parse confidence below 0.5: check the resume by hand"
           }
         },
         "type": "object",
@@ -2068,8 +2089,11 @@
           "education_score",
           "required_skill_coverage",
           "top_matched_skills",
+          "matched_skill_count",
           "missing_required_count",
-          "is_stale"
+          "is_stale",
+          "parse_confidence",
+          "needs_review"
         ],
         "title": "RankingRow"
       },

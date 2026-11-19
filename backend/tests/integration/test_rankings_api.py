@@ -68,6 +68,9 @@ def test_rankings_come_back_in_score_order(client: TestClient, job_id: str) -> N
     top = rows[0]
     assert set(top) >= {"name", "current_title", "total_years", "relevant_years", "verdict"}
     assert len(top["top_matched_skills"]) <= 5
+    assert all(r["matched_skill_count"] >= len(r["top_matched_skills"]) for r in rows)
+    assert all(0 < r["parse_confidence"] <= 1 for r in rows)
+    assert all(r["needs_review"] is (r["parse_confidence"] < 0.5) for r in rows)
     assert all(r["is_stale"] is False for r in rows)
     names = {r["name"] for r in rows}
     assert "Arjun Mehta" in names and None not in names

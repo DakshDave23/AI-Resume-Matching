@@ -684,6 +684,11 @@ export interface components {
              * @description Up to 5, full credit first
              */
             top_matched_skills: string[];
+            /**
+             * Matched Skill Count
+             * @description All matched skills, at any tier
+             */
+            matched_skill_count: number;
             /** Missing Required Count */
             missing_required_count: number;
             /**
@@ -691,6 +696,13 @@ export interface components {
              * @description The job's requirements changed since this was scored
              */
             is_stale: boolean;
+            /** Parse Confidence */
+            parse_confidence: number | null;
+            /**
+             * Needs Review
+             * @description Parse confidence below 0.5: check the resume by hand
+             */
+            needs_review: boolean;
         };
         /** RankingsOut */
         RankingsOut: {

@@ -25,6 +25,7 @@ from app.schemas.rankings import (
 from app.services import rankings as ranking_service
 from app.services.jobs import get_job
 from app.services.nlp.embedder import TextEncoder
+from app.services.parsing.resume_parser import MIN_CONFIDENCE
 
 router = APIRouter(prefix="/jobs", tags=["rankings"])
 
@@ -134,8 +135,12 @@ def get_rankings(
                 education_score=_float(r.education_score),
                 required_skill_coverage=_float(r.required_skill_coverage),
                 top_matched_skills=ranking_service.top_matched_skills(r.matched_skills),
+                matched_skill_count=len(r.matched_skills),
                 missing_required_count=ranking_service.missing_required_count(r.missing_skills),
                 is_stale=r.is_stale,
+                parse_confidence=_float(r.parse_confidence),
+                needs_review=r.parse_confidence is not None
+                and r.parse_confidence < Decimal(str(MIN_CONFIDENCE)),
             )
             for r in rows
         ],

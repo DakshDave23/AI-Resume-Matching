@@ -53,8 +53,11 @@ class RankingRow(BaseModel):
     education_score: float | None
     required_skill_coverage: float | None
     top_matched_skills: list[str] = Field(description="Up to 5, full credit first")
+    matched_skill_count: int = Field(description="All matched skills, at any tier")
     missing_required_count: int
     is_stale: bool = Field(description="The job's requirements changed since this was scored")
+    parse_confidence: float | None
+    needs_review: bool = Field(description="Parse confidence below 0.5: check the resume by hand")
 
 
 class RankingsOut(BaseModel):

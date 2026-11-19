@@ -34,6 +34,7 @@ class RankingRecord:
     matched_skills: list[dict[str, Any]]
     missing_skills: list[dict[str, Any]]
     is_stale: bool
+    parse_confidence: Decimal | None
 
 
 def _escape_like(text: str) -> str:
@@ -63,6 +64,7 @@ def _ranking_query(job_id: uuid.UUID) -> Select[*tuple[Any, ...]]:
             MatchResult.matched_skills,
             MatchResult.missing_skills,
             MatchResult.is_stale,
+            Resume.parse_confidence,
         )
         .join(Resume, Resume.id == MatchResult.resume_id)
         .outerjoin(Candidate, Candidate.id == Resume.candidate_id)

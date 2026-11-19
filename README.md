@@ -151,6 +151,8 @@ The API address comes from `VITE_API_BASE_URL` in the repo-root `.env` (default 
 
 **Uploading resumes** (`/jobs/:jobId/upload`): drop or choose up to 50 PDF/DOCX files of at most 5 MB each. Files that can't be sent are listed with the reason before anything is uploaded. After the upload, the page polls `/batches/{id}` every 2 seconds and shows each file's status (queued, parsing, parsed, failed with the reason) until the batch finishes. The batch id is kept in the URL (`?batch=`), so a reload keeps showing the progress.
 
+**Rankings dashboard** (`/jobs/:jobId/rankings`): four summary cards (resumes ranked, average match, top match, how many have every required skill) over the ranked table. Each row shows rank, name and current title, total and relevant years, match % as a bar with its verdict word, the first 4 matched skills and "+N", the missing required count and parse quality. Search, minimum match and "Has skill" are sent to `GET /rankings`, so the table shows exactly the API's rows in the API's order. Clicking a column header sorts those rows (a third click goes back to the API order). If the requirements changed after scoring, a banner offers "Re-score now" (`POST /match`).
+
 **API types** are generated, never written by hand. After changing a backend route or schema, run `make types`. It writes the OpenAPI schema to `frontend/openapi.json` and regenerates `frontend/src/types/api.ts` with `openapi-typescript`, so the frontend's type check catches any mismatch.
 
 ## Sample data
@@ -396,7 +398,7 @@ REST under `/api/v1`. Swagger UI at http://localhost:8000/docs lists every route
 | POST | `/jobs/{job_id}/resumes` | Upload 1–50 PDF/DOCX resumes; 202 with the batch id, accepted files and rejected files with reasons |
 | GET | `/batches/{batch_id}` | Batch progress for polling: status, parsed / failed / pending counts, and each file's parse status, error, confidence (`needs_review` below 0.5) and candidate name |
 | POST | `/jobs/{job_id}/match` | Re-score every parsed resume (optionally saving new `weights` first); 409 if a run is already going |
-| GET | `/jobs/{job_id}/rankings` | Ranked candidates: match %, verdict, component scores, years, top skills, missing required count. Filters: `min_score`, `skill` (an alias works), `search`; `sort` = score, name, relevant_experience, total_experience |
+| GET | `/jobs/{job_id}/rankings` | Ranked candidates: match %, verdict, component scores, years, top skills and matched-skill count, missing required count, parse confidence (`needs_review` below 0.5). Filters: `min_score`, `skill` (an alias works), `search`; `sort` = score, name, relevant_experience, total_experience |
 | GET | `/jobs/{job_id}/rankings/export` | The same rows as CSV (cells that would run as spreadsheet formulas are escaped) |
 | GET | `/jobs/{job_id}/candidates/{resume_id}` | The full stored analysis: contact, component scores, matched and missing skills, requirement matches, explanation |
 | PATCH | `/jobs/{job_id}/weights` | Save the four weights (each ≥ 0, not all 0) and recompute every total |

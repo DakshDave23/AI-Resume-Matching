@@ -79,6 +79,7 @@ def record(name: str, phone: str | None = None) -> RankingRecord:
         matched_skills=[{"skill": "Java"}, {"skill": "Docker"}],
         missing_skills=[{"skill": "AWS"}],
         is_stale=False,
+        parse_confidence=Decimal("0.90"),
     )
 
 
