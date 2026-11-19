@@ -1,5 +1,7 @@
 # AI Resume Matcher
 
+[![CI](https://github.com/DakshDave23/AI-Resume-Matching/actions/workflows/ci.yml/badge.svg)](https://github.com/DakshDave23/AI-Resume-Matching/actions/workflows/ci.yml)
+
 Rank a batch of PDF/DOCX resumes against a job description and explain every point of every score.
 
 Each resume gets a 0–100 match score built from four explainable components: **skills**, **semantic similarity**, **relevant experience**, and **education**. Scoring is deterministic: the same inputs always produce the same score, and every point traces back to a rule and a piece of evidence from the resume.
@@ -509,7 +511,14 @@ The parser tests come in two kinds:
 - **Sample tests** (`test_*_samples.py`) run every parser on the 14 text samples and 3 JDs and compare with `sample_data/ground_truth.json`. They share `tests/samples.py`, which extracts each sample file once per run.
 - **End-to-end ranking test** (`tests/integration/test_end_to_end_ranking.py`, real model and database): create the Java job, upload all 15 samples, poll until done, fetch the rankings. It checks that sample 15 failed with a reason, sample 13 ranks last, and every strong or good sample ranks above every partial or weak one. The design doc's last check, that the four strong samples fill the top 4, is marked as an expected failure until the calibration step. Sample 11 (rated "good": every skill matched exactly, but only a diploma) ranks 4th, 2.7 points above sample 3 (rated "strong", with three skills only related or inferred).
 
-Tests that load the real embedding model are marked `model` (`pytest -m "not model"` skips them); tests that need Postgres are marked `integration`.
+Tests that load the real embedding model are marked `model` (`pytest -m "not model"` skips them); tests that need Postgres are marked `integration`. Without Postgres they are skipped locally but fail in CI, so a broken database setup can't pass by skipping.
+
+**CI** ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs on every push to `main` and every pull request, in two parallel jobs:
+
+- **Backend:** Python 3.12 with CPU-only PyTorch and a Postgres + pgvector service container. Runs ruff (lint and format), mypy, and the full test suite, including the real-model tests (the model is cached between runs). It then checks that `frontend/openapi.json` still matches the API.
+- **Frontend:** Node 22. Runs ESLint, Prettier, the type check, Vitest and the production build. It then checks that `src/types/api.ts` still matches `openapi.json`.
+
+The last two checks fail if a route or schema changed without `make types`, so the frontend and backend can't drift apart.
 
 ## Limitations and future work
 

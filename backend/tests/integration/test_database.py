@@ -1,4 +1,4 @@
-"""Talks to the real Postgres from docker-compose. Skipped when it isn't running."""
+"""Talks to the real Postgres from docker-compose. Skipped when it isn't running (fails in CI)."""
 
 from collections.abc import Iterator
 
@@ -6,18 +6,18 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
-from app.core.database import get_database_status, get_engine
+from app.core.database import get_engine
 from app.main import create_app
 from app.services.nlp.loader import ModelLoader
 from tests.fakes import FakeEncoder
+from tests.integration.conftest import require_postgres
 
 pytestmark = pytest.mark.integration
 
 
 @pytest.fixture(scope="module", autouse=True)
 def require_database() -> Iterator[None]:
-    if not get_database_status().reachable:
-        pytest.skip("Postgres is not reachable; start it with: docker compose up -d --wait db")
+    require_postgres()
     yield
 
 

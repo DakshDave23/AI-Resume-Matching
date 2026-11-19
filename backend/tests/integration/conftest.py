@@ -1,5 +1,6 @@
 """Fixtures for tests that need the real Postgres from docker-compose."""
 
+import os
 from collections.abc import Iterator
 from contextlib import nullcontext
 from pathlib import Path
@@ -22,13 +23,23 @@ from app.services.storage import FileStore
 from tests.fakes import FakeEncoder
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
+NO_DATABASE = "Postgres is not reachable; start it with: docker compose up -d --wait db"
+
+
+def require_postgres() -> None:
+    """Skip a test that needs Postgres when it isn't running, except in CI (which sets
+    CI=true and starts one): there a missing database must fail, not pass by skipping."""
+    if get_database_status().reachable:
+        return
+    if os.environ.get("CI"):
+        pytest.fail(NO_DATABASE)
+    pytest.skip(NO_DATABASE)
 
 
 @pytest.fixture(scope="session")
 def migrated_engine() -> Engine:
     """Skip if Postgres is down; otherwise bring the schema to the latest migration once."""
-    if not get_database_status().reachable:
-        pytest.skip("Postgres is not reachable; start it with: docker compose up -d --wait db")
+    require_postgres()
     command.upgrade(Config(str(BACKEND_DIR / "alembic.ini")), "head")
     return get_engine()
 
