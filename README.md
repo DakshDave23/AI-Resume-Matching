@@ -442,6 +442,9 @@ The parser tests come in two kinds:
 
 - **Unit tests** (`test_dates.py`, `test_sections.py`, `test_skills.py`, `test_jd_parser.py`, ...) pin each rule with small inputs, including formats the samples don't have: 21 date formats, overlapping, nested, back-to-back and gapped roles, upper-case, colon and two-column headers, aliases (k8s), fuzzy variants (Node JS), the Java/JavaScript guard, short aliases (C, R, JS, ML), required vs preferred cues, "3–5 years" and "5+ years of Java".
 - **Sample tests** (`test_*_samples.py`) run every parser on the 14 text samples and 3 JDs and compare with `sample_data/ground_truth.json`. They share `tests/samples.py`, which extracts each sample file once per run.
+- **End-to-end ranking test** (`tests/integration/test_end_to_end_ranking.py`, real model and database): create the Java job, upload all 15 samples, poll until done, fetch the rankings. It checks that sample 15 failed with a reason, sample 13 ranks last, and every strong or good sample ranks above every partial or weak one. The design doc's last check, that the four strong samples fill the top 4, is marked as an expected failure until the calibration step. Sample 11 (rated "good": every skill matched exactly, but only a diploma) ranks 4th, 2.7 points above sample 3 (rated "strong", with three skills only related or inferred).
+
+Tests that load the real embedding model are marked `model` (`pytest -m "not model"` skips them); tests that need Postgres are marked `integration`.
 
 ## Limitations and future work
 
