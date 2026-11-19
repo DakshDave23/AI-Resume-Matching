@@ -14,11 +14,16 @@ from app.repositories import rankings as ranking_repo
 from app.repositories.skills import find_skill
 from app.schemas.rankings import (
     CandidateOut,
+    EducationOut,
+    ExplanationOut,
+    MatchedSkillOut,
     MatchRequest,
     MatchRunOut,
+    MissingSkillOut,
     RankingRow,
     RankingSort,
     RankingsOut,
+    RequirementMatchOut,
     Weights,
     WeightsOut,
 )
@@ -37,6 +42,11 @@ BUSY: Responses = {409: {"description": "Scoring is already running"}}
 
 def _float(value: Decimal | None) -> float | None:
     return float(value) if value is not None else None
+
+
+def _needs_review(confidence: Decimal | None) -> bool:
+    """Low parse confidence: the parse may have missed things (as in the upload status)."""
+    return confidence is not None and confidence < Decimal(str(MIN_CONFIDENCE))
 
 
 @router.post(
@@ -139,8 +149,7 @@ def get_rankings(
                 missing_required_count=ranking_service.missing_required_count(r.missing_skills),
                 is_stale=r.is_stale,
                 parse_confidence=_float(r.parse_confidence),
-                needs_review=r.parse_confidence is not None
-                and r.parse_confidence < Decimal(str(MIN_CONFIDENCE)),
+                needs_review=_needs_review(r.parse_confidence),
             )
             for r in rows
         ],
@@ -183,8 +192,8 @@ def get_candidate(
     if found is None:
         raise AppError(404, "No scored candidate with this id for this job")
     match, resume, person = found
-    details = match.explanation.get("details", {})
-    relevant = details.get("experience", {}).get("relevant_months")
+    explanation = ExplanationOut.model_validate(match.explanation)
+    relevant = explanation.details.experience.relevant_months
     return CandidateOut(
         job_id=job_id,
         resume_id=resume_id,
@@ -204,6 +213,18 @@ def get_candidate(
         total_years=ranking_service.years(resume.total_experience_months),
         relevant_years=ranking_service.years(relevant),
         parse_confidence=_float(resume.parse_confidence),
+        needs_review=_needs_review(resume.parse_confidence),
+        educations=[
+            EducationOut(
+                degree=e.degree_raw,
+                degree_level=e.degree_level,
+                field_of_study=e.field_of_study,
+                institution=e.institution,
+                graduation_year=e.graduation_year,
+            )
+            for e in ranking_repo.resume_educations(db, resume_id)
+        ],
+        raw_text=resume.raw_text,
         component_scores={
             "skills": _float(match.skill_score),
             "semantic": _float(match.semantic_score),
@@ -211,8 +232,10 @@ def get_candidate(
             "education": _float(match.education_score),
         },
         required_skill_coverage=_float(match.required_skill_coverage),
-        matched_skills=match.matched_skills,
-        missing_skills=match.missing_skills,
-        requirement_matches=match.requirement_matches,
-        explanation=match.explanation,
+        matched_skills=[MatchedSkillOut.model_validate(m) for m in match.matched_skills],
+        missing_skills=[MissingSkillOut.model_validate(m) for m in match.missing_skills],
+        requirement_matches=[
+            RequirementMatchOut.model_validate(m) for m in match.requirement_matches
+        ],
+        explanation=explanation,
     )

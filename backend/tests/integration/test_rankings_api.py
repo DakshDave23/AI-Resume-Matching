@@ -123,6 +123,36 @@ def test_candidate_detail(client: TestClient, job_id: str) -> None:
     )
     earned = sum(p["earned"] for p in explanation["breakdown"])
     assert earned == pytest.approx(round(detail["match_percent"], 1))
+    # What the candidate page's tabs read
+    assert {m["tier"] for m in detail["matched_skills"]} <= {
+        "exact",
+        "alias",
+        "related",
+        "contextual",
+    }
+    assert all(
+        r["status"] in {"covered", "partial", "not_covered"} for r in detail["requirement_matches"]
+    )
+    roles = explanation["details"]["experience"]["roles"]
+    assert roles and all(r["factor"] in (0, 0.5, 1) for r in roles)
+    assert detail["educations"] and detail["educations"][0]["degree"]
+    assert detail["name"] in detail["raw_text"]
+
+
+def test_the_original_file_is_served_under_its_name(client: TestClient, job_id: str) -> None:
+    row = rankings(client, job_id)["rows"][0]
+    response = client.get(f"/api/v1/resumes/{row['resume_id']}/file")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] in {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+    assert row["filename"] in response.headers["content-disposition"]
+    assert response.headers["content-disposition"].startswith("inline")
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.content[:4] in (b"%PDF", b"PK\x03\x04")
+    assert client.get(f"/api/v1/resumes/{uuid.uuid4()}/file").status_code == 404
 
 
 def test_a_resume_without_a_score_for_this_job_is_404(

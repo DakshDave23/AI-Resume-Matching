@@ -221,6 +221,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/resumes/{resume_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The uploaded file, under the recruiter's original file name */
+        get: operations["get_resume_file_api_v1_resumes__resume_id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/skills": {
         parameters: {
             query?: never;
@@ -370,6 +387,34 @@ export interface components {
              */
             files: string[];
         };
+        /** BreakdownOut */
+        BreakdownOut: {
+            /**
+             * Component
+             * @enum {string}
+             */
+            component: "skills" | "semantic" | "experience" | "education";
+            /** Label */
+            label: string;
+            /**
+             * Active
+             * @description False when there was nothing to score it on
+             */
+            active: boolean;
+            /** Score */
+            score: number | null;
+            /** Weight */
+            weight: number;
+            /**
+             * Available
+             * @description Points this component can give
+             */
+            available: number;
+            /** Earned */
+            earned: number;
+            /** Lost */
+            lost: number;
+        };
         /**
          * CandidateOut
          * @description Everything the candidate page shows, read from what scoring stored.
@@ -419,6 +464,18 @@ export interface components {
             relevant_years: number | null;
             /** Parse Confidence */
             parse_confidence: number | null;
+            /**
+             * Needs Review
+             * @description Parse confidence below 0.5: check the resume by hand
+             */
+            needs_review: boolean;
+            /** Educations */
+            educations: components["schemas"]["EducationOut"][];
+            /**
+             * Raw Text
+             * @description The text extracted from the file
+             */
+            raw_text: string | null;
             /** Component Scores */
             component_scores: {
                 [key: string]: number | null;
@@ -426,24 +483,12 @@ export interface components {
             /** Required Skill Coverage */
             required_skill_coverage: number | null;
             /** Matched Skills */
-            matched_skills: {
-                [key: string]: unknown;
-            }[];
+            matched_skills: components["schemas"]["MatchedSkillOut"][];
             /** Missing Skills */
-            missing_skills: {
-                [key: string]: unknown;
-            }[];
+            missing_skills: components["schemas"]["MissingSkillOut"][];
             /** Requirement Matches */
-            requirement_matches: {
-                [key: string]: unknown;
-            }[];
-            /**
-             * Explanation
-             * @description verdict, summary, breakdown, strengths, gaps, notes, details
-             */
-            explanation: {
-                [key: string]: unknown;
-            };
+            requirement_matches: components["schemas"]["RequirementMatchOut"][];
+            explanation: components["schemas"]["ExplanationOut"];
         };
         /**
          * DegreeLevel
@@ -451,6 +496,110 @@ export interface components {
          * @enum {integer}
          */
         DegreeLevel: 0 | 1 | 2 | 3 | 4 | 5;
+        /** DetailsOut */
+        DetailsOut: {
+            skills: components["schemas"]["SkillCountsOut"];
+            experience: components["schemas"]["ExperienceDetailsOut"];
+            education: components["schemas"]["EducationDetailsOut"];
+        };
+        /** EducationDetailsOut */
+        EducationDetailsOut: {
+            /** Required Level */
+            required_level: number | null;
+            /** Candidate Level */
+            candidate_level: number | null;
+            /**
+             * Level Score
+             * @description None when the JD names no degree
+             */
+            level_score: number | null;
+            /** Required Fields */
+            required_fields: string[];
+            /**
+             * Field Result
+             * @enum {string}
+             */
+            field_result: "not_required" | "match" | "different" | "unknown";
+            /** Candidate Field */
+            candidate_field: string | null;
+            /** Matched Field */
+            matched_field: string | null;
+            /** Weight Factor */
+            weight_factor: number;
+            /** Waived By Experience */
+            waived_by_experience: boolean;
+        };
+        /** EducationOut */
+        EducationOut: {
+            /**
+             * Degree
+             * @description As written on the resume
+             */
+            degree: string | null;
+            /**
+             * Degree Level
+             * @description 0 none … 5 doctorate
+             */
+            degree_level: number | null;
+            /** Field Of Study */
+            field_of_study: string | null;
+            /** Institution */
+            institution: string | null;
+            /** Graduation Year */
+            graduation_year: number | null;
+        };
+        /** EvidenceItemOut */
+        EvidenceItemOut: {
+            /** Type */
+            type: string;
+            /**
+             * Impact
+             * @description Points: positive earned, negative lost
+             */
+            impact: number;
+            /** Message */
+            message: string;
+            /** Snippet */
+            snippet: string | null;
+            /** Section */
+            section: string | null;
+        };
+        /** ExperienceDetailsOut */
+        ExperienceDetailsOut: {
+            /** Relevant Months */
+            relevant_months: number;
+            /** Total Months */
+            total_months: number | null;
+            /** Min Years */
+            min_years: number | null;
+            /** Max Years */
+            max_years: number | null;
+            /** Above Max */
+            above_max: boolean;
+            /** Roles */
+            roles: components["schemas"]["RoleOut"][];
+        };
+        /** ExplanationOut */
+        ExplanationOut: {
+            /** Verdict */
+            verdict: string;
+            /**
+             * Score
+             * @description The breakdown's earned points summed; equals the match %
+             */
+            score: number;
+            /** Summary */
+            summary: string;
+            /** Breakdown */
+            breakdown: components["schemas"]["BreakdownOut"][];
+            /** Strengths */
+            strengths: components["schemas"]["EvidenceItemOut"][];
+            /** Gaps */
+            gaps: components["schemas"]["EvidenceItemOut"][];
+            /** Notes */
+            notes: string[];
+            details: components["schemas"]["DetailsOut"];
+        };
         /**
          * FileType
          * @enum {string}
@@ -641,6 +790,53 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** MatchedSkillOut */
+        MatchedSkillOut: {
+            /** Skill */
+            skill: string;
+            /**
+             * Requirement Type
+             * @enum {string}
+             */
+            requirement_type: "required" | "preferred";
+            /** Weight */
+            weight: number;
+            /**
+             * Tier
+             * @enum {string}
+             */
+            tier: "exact" | "alias" | "related" | "contextual";
+            /**
+             * Credit
+             * @description 0–1 before any years shortfall
+             */
+            credit: number;
+            /**
+             * Matched Skill
+             * @description The resume skill a related match came from
+             */
+            matched_skill: string | null;
+            /** Similarity */
+            similarity: number | null;
+            /** Evidence */
+            evidence: string | null;
+            /** Min Years */
+            min_years: number | null;
+            /** Years Used */
+            years_used: number | null;
+        };
+        /** MissingSkillOut */
+        MissingSkillOut: {
+            /** Skill */
+            skill: string;
+            /**
+             * Requirement Type
+             * @enum {string}
+             */
+            requirement_type: "required" | "preferred";
+            /** Weight */
+            weight: number;
+        };
         /**
          * ParseStatus
          * @enum {string}
@@ -736,6 +932,32 @@ export interface components {
          * @enum {string}
          */
         RequirementCategory: "skill" | "experience" | "education" | "responsibility" | "other";
+        /** RequirementMatchOut */
+        RequirementMatchOut: {
+            /** Requirement Id */
+            requirement_id: number;
+            /** Text */
+            text: string;
+            /**
+             * Requirement Type
+             * @enum {string}
+             */
+            requirement_type: "required" | "preferred";
+            /** Similarity */
+            similarity: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "covered" | "partial" | "not_covered";
+            /**
+             * Evidence
+             * @description The resume sentence closest to the requirement
+             */
+            evidence: string | null;
+            /** Evidence Section */
+            evidence_section: string | null;
+        };
         /**
          * RequirementType
          * @enum {string}
@@ -758,6 +980,34 @@ export interface components {
             /** Accepts Equivalent Experience */
             accepts_equivalent_experience?: boolean | null;
         };
+        /** RoleOut */
+        RoleOut: {
+            /** Title */
+            title: string | null;
+            /** Company */
+            company: string | null;
+            /** Start */
+            start: string | null;
+            /**
+             * End
+             * @description None while the role is current
+             */
+            end: string | null;
+            /** Months */
+            months: number | null;
+            /**
+             * Similarity
+             * @description Role title and duties against the JD
+             */
+            similarity: number | null;
+            /**
+             * Factor
+             * @description How much of the role counts as relevant: 1, 0.5 or 0
+             */
+            factor: number;
+            /** Counted */
+            counted: boolean;
+        };
         /**
          * Seniority
          * @description Read from a JD title (design doc §5.4). Kept in jobs.parsed_json; there is no column.
@@ -777,6 +1027,13 @@ export interface components {
          * @enum {string}
          */
         SkillCategory: "language" | "framework" | "library" | "database" | "messaging" | "cloud" | "devops" | "tool" | "data" | "ml" | "testing" | "concept" | "methodology" | "soft" | "business";
+        /** SkillCountsOut */
+        SkillCountsOut: {
+            /** Required Matched */
+            required_matched: number;
+            /** Required Total */
+            required_total: number;
+        };
         /** SkillOut */
         SkillOut: {
             /** Id */
@@ -1415,6 +1672,45 @@ export interface operations {
                 };
             };
             /** @description No such job, or this resume has no score for it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_resume_file_api_v1_resumes__resume_id__file_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resume_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": unknown;
+                };
+            };
+            /** @description No such resume, or its file is gone */
             404: {
                 headers: {
                     [name: string]: unknown;

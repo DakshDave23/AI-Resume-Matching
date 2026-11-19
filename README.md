@@ -153,6 +153,17 @@ The API address comes from `VITE_API_BASE_URL` in the repo-root `.env` (default 
 
 **Rankings dashboard** (`/jobs/:jobId/rankings`): four summary cards (resumes ranked, average match, top match, how many have every required skill) over the ranked table. Each row shows rank, name and current title, total and relevant years, match % as a bar with its verdict word, the first 4 matched skills and "+N", the missing required count and parse quality. Search, minimum match and "Has skill" are sent to `GET /rankings`, so the table shows exactly the API's rows in the API's order. Clicking a column header sorts those rows (a third click goes back to the API order). If the requirements changed after scoring, a banner offers "Re-score now" (`POST /match`).
 
+**Candidate page** (`/jobs/:jobId/candidates/:resumeId`): name, title, contact details, links and a parse-confidence badge, then a score gauge with the verdict and a breakdown bar per component (the earned points add up to the match %). The tabs are:
+
+- **Overview:** top strengths and top gaps, each with its points and the resume snippet behind it.
+- **Skills:** matched skills with their tier (Exact, Alias, Related, Inferred; evidence on hover), then missing required and preferred skills.
+- **Experience:** required, total and relevant years, and each role with its relevance factor.
+- **Requirements:** each JD requirement, the closest resume sentence, the similarity and a status.
+- **Education:** what the JD asks for, what the resume has, and how it was scored.
+- **Resume:** the extracted text with matched skills highlighted, and a link to the original file.
+
+Previous and Next move through the ranking.
+
 **API types** are generated, never written by hand. After changing a backend route or schema, run `make types`. It writes the OpenAPI schema to `frontend/openapi.json` and regenerates `frontend/src/types/api.ts` with `openapi-typescript`, so the frontend's type check catches any mismatch.
 
 ## Sample data
@@ -400,7 +411,8 @@ REST under `/api/v1`. Swagger UI at http://localhost:8000/docs lists every route
 | POST | `/jobs/{job_id}/match` | Re-score every parsed resume (optionally saving new `weights` first); 409 if a run is already going |
 | GET | `/jobs/{job_id}/rankings` | Ranked candidates: match %, verdict, component scores, years, top skills and matched-skill count, missing required count, parse confidence (`needs_review` below 0.5). Filters: `min_score`, `skill` (an alias works), `search`; `sort` = score, name, relevant_experience, total_experience |
 | GET | `/jobs/{job_id}/rankings/export` | The same rows as CSV (cells that would run as spreadsheet formulas are escaped) |
-| GET | `/jobs/{job_id}/candidates/{resume_id}` | The full stored analysis: contact, component scores, matched and missing skills, requirement matches, explanation |
+| GET | `/jobs/{job_id}/candidates/{resume_id}` | The full stored analysis: contact, parse confidence, education entries, extracted text, component scores, matched skills (tier, evidence) and missing skills, requirement matches, explanation (breakdown, strengths, gaps, experience roles, education) |
+| GET | `/resumes/{resume_id}/file` | The original uploaded file under its original name (PDFs open in the browser) |
 | PATCH | `/jobs/{job_id}/weights` | Save the four weights (each ≥ 0, not all 0) and recompute every total |
 | GET | `/skills?q=` | Autocomplete for the requirement chips: exact name or alias first, then names and aliases starting with the text (`k8s` finds Kubernetes) |
 

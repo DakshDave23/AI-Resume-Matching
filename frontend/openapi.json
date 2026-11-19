@@ -804,6 +804,49 @@
         }
       }
     },
+    "/api/v1/resumes/{resume_id}/file": {
+      "get": {
+        "tags": [
+          "resumes"
+        ],
+        "summary": "The uploaded file, under the recruiter's original file name",
+        "operationId": "get_resume_file_api_v1_resumes__resume_id__file_get",
+        "parameters": [
+          {
+            "name": "resume_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Resume Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {},
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {}
+            }
+          },
+          "404": {
+            "description": "No such resume, or its file is gone"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/skills": {
       "get": {
         "tags": [
@@ -1135,6 +1178,69 @@
         ],
         "title": "Body_upload_resumes_api_v1_jobs__job_id__resumes_post"
       },
+      "BreakdownOut": {
+        "properties": {
+          "component": {
+            "type": "string",
+            "enum": [
+              "skills",
+              "semantic",
+              "experience",
+              "education"
+            ],
+            "title": "Component"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "description": "False when there was nothing to score it on"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight"
+          },
+          "available": {
+            "type": "number",
+            "title": "Available",
+            "description": "Points this component can give"
+          },
+          "earned": {
+            "type": "number",
+            "title": "Earned"
+          },
+          "lost": {
+            "type": "number",
+            "title": "Lost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "component",
+          "label",
+          "active",
+          "score",
+          "weight",
+          "available",
+          "earned",
+          "lost"
+        ],
+        "title": "BreakdownOut"
+      },
       "CandidateOut": {
         "properties": {
           "job_id": {
@@ -1291,6 +1397,30 @@
             ],
             "title": "Parse Confidence"
           },
+          "needs_review": {
+            "type": "boolean",
+            "title": "Needs Review",
+            "description": "Parse confidence below 0.5: check the resume by hand"
+          },
+          "educations": {
+            "items": {
+              "$ref": "#/components/schemas/EducationOut"
+            },
+            "type": "array",
+            "title": "Educations"
+          },
+          "raw_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Text",
+            "description": "The text extracted from the file"
+          },
           "component_scores": {
             "additionalProperties": {
               "anyOf": [
@@ -1318,33 +1448,27 @@
           },
           "matched_skills": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/MatchedSkillOut"
             },
             "type": "array",
             "title": "Matched Skills"
           },
           "missing_skills": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/MissingSkillOut"
             },
             "type": "array",
             "title": "Missing Skills"
           },
           "requirement_matches": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/RequirementMatchOut"
             },
             "type": "array",
             "title": "Requirement Matches"
           },
           "explanation": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Explanation",
-            "description": "verdict, summary, breakdown, strengths, gaps, notes, details"
+            "$ref": "#/components/schemas/ExplanationOut"
           }
         },
         "type": "object",
@@ -1367,6 +1491,9 @@
           "total_years",
           "relevant_years",
           "parse_confidence",
+          "needs_review",
+          "educations",
+          "raw_text",
           "component_scores",
           "required_skill_coverage",
           "matched_skills",
@@ -1389,6 +1516,364 @@
         ],
         "title": "DegreeLevel",
         "description": "Stored as SMALLINT 0-5 with a CHECK constraint, so levels can be compared with >=."
+      },
+      "DetailsOut": {
+        "properties": {
+          "skills": {
+            "$ref": "#/components/schemas/SkillCountsOut"
+          },
+          "experience": {
+            "$ref": "#/components/schemas/ExperienceDetailsOut"
+          },
+          "education": {
+            "$ref": "#/components/schemas/EducationDetailsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skills",
+          "experience",
+          "education"
+        ],
+        "title": "DetailsOut"
+      },
+      "EducationDetailsOut": {
+        "properties": {
+          "required_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Level"
+          },
+          "candidate_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Level"
+          },
+          "level_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level Score",
+            "description": "None when the JD names no degree"
+          },
+          "required_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Fields"
+          },
+          "field_result": {
+            "type": "string",
+            "enum": [
+              "not_required",
+              "match",
+              "different",
+              "unknown"
+            ],
+            "title": "Field Result"
+          },
+          "candidate_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Field"
+          },
+          "matched_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Field"
+          },
+          "weight_factor": {
+            "type": "number",
+            "title": "Weight Factor"
+          },
+          "waived_by_experience": {
+            "type": "boolean",
+            "title": "Waived By Experience"
+          }
+        },
+        "type": "object",
+        "required": [
+          "required_level",
+          "candidate_level",
+          "level_score",
+          "required_fields",
+          "field_result",
+          "candidate_field",
+          "matched_field",
+          "weight_factor",
+          "waived_by_experience"
+        ],
+        "title": "EducationDetailsOut"
+      },
+      "EducationOut": {
+        "properties": {
+          "degree": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Degree",
+            "description": "As written on the resume"
+          },
+          "degree_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Degree Level",
+            "description": "0 none \u2026 5 doctorate"
+          },
+          "field_of_study": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Of Study"
+          },
+          "institution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Institution"
+          },
+          "graduation_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graduation Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "degree",
+          "degree_level",
+          "field_of_study",
+          "institution",
+          "graduation_year"
+        ],
+        "title": "EducationOut"
+      },
+      "EvidenceItemOut": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "impact": {
+            "type": "number",
+            "title": "Impact",
+            "description": "Points: positive earned, negative lost"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snippet"
+          },
+          "section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "impact",
+          "message",
+          "snippet",
+          "section"
+        ],
+        "title": "EvidenceItemOut"
+      },
+      "ExperienceDetailsOut": {
+        "properties": {
+          "relevant_months": {
+            "type": "number",
+            "title": "Relevant Months"
+          },
+          "total_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Months"
+          },
+          "min_years": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Years"
+          },
+          "max_years": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Years"
+          },
+          "above_max": {
+            "type": "boolean",
+            "title": "Above Max"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOut"
+            },
+            "type": "array",
+            "title": "Roles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "relevant_months",
+          "total_months",
+          "min_years",
+          "max_years",
+          "above_max",
+          "roles"
+        ],
+        "title": "ExperienceDetailsOut"
+      },
+      "ExplanationOut": {
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "title": "Verdict"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score",
+            "description": "The breakdown's earned points summed; equals the match %"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "breakdown": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownOut"
+            },
+            "type": "array",
+            "title": "Breakdown"
+          },
+          "strengths": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceItemOut"
+            },
+            "type": "array",
+            "title": "Strengths"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceItemOut"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "details": {
+            "$ref": "#/components/schemas/DetailsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "verdict",
+          "score",
+          "summary",
+          "breakdown",
+          "strengths",
+          "gaps",
+          "notes",
+          "details"
+        ],
+        "title": "ExplanationOut"
       },
       "FileType": {
         "type": "string",
@@ -1887,6 +2372,138 @@
         ],
         "title": "MatchRunOut"
       },
+      "MatchedSkillOut": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "requirement_type": {
+            "type": "string",
+            "enum": [
+              "required",
+              "preferred"
+            ],
+            "title": "Requirement Type"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "alias",
+              "related",
+              "contextual"
+            ],
+            "title": "Tier"
+          },
+          "credit": {
+            "type": "number",
+            "title": "Credit",
+            "description": "0\u20131 before any years shortfall"
+          },
+          "matched_skill": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Skill",
+            "description": "The resume skill a related match came from"
+          },
+          "similarity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "min_years": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Years"
+          },
+          "years_used": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Years Used"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill",
+          "requirement_type",
+          "weight",
+          "tier",
+          "credit",
+          "matched_skill",
+          "similarity",
+          "evidence",
+          "min_years",
+          "years_used"
+        ],
+        "title": "MatchedSkillOut"
+      },
+      "MissingSkillOut": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "requirement_type": {
+            "type": "string",
+            "enum": [
+              "required",
+              "preferred"
+            ],
+            "title": "Requirement Type"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill",
+          "requirement_type",
+          "weight"
+        ],
+        "title": "MissingSkillOut"
+      },
       "ParseStatus": {
         "type": "string",
         "enum": [
@@ -2160,6 +2777,73 @@
         ],
         "title": "RequirementCategory"
       },
+      "RequirementMatchOut": {
+        "properties": {
+          "requirement_id": {
+            "type": "integer",
+            "title": "Requirement Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "requirement_type": {
+            "type": "string",
+            "enum": [
+              "required",
+              "preferred"
+            ],
+            "title": "Requirement Type"
+          },
+          "similarity": {
+            "type": "number",
+            "title": "Similarity"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "covered",
+              "partial",
+              "not_covered"
+            ],
+            "title": "Status"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence",
+            "description": "The resume sentence closest to the requirement"
+          },
+          "evidence_section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Section"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requirement_id",
+          "text",
+          "requirement_type",
+          "similarity",
+          "status",
+          "evidence",
+          "evidence_section"
+        ],
+        "title": "RequirementMatchOut"
+      },
       "RequirementType": {
         "type": "string",
         "enum": [
@@ -2255,6 +2939,99 @@
         "title": "RequirementsUpdate",
         "description": "Recruiter edits. Only the fields sent are changed; `skills` replaces the whole list."
       },
+      "RoleOut": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End",
+            "description": "None while the role is current"
+          },
+          "months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months"
+          },
+          "similarity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity",
+            "description": "Role title and duties against the JD"
+          },
+          "factor": {
+            "type": "number",
+            "title": "Factor",
+            "description": "How much of the role counts as relevant: 1, 0.5 or 0"
+          },
+          "counted": {
+            "type": "boolean",
+            "title": "Counted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "company",
+          "start",
+          "end",
+          "months",
+          "similarity",
+          "factor",
+          "counted"
+        ],
+        "title": "RoleOut"
+      },
       "Seniority": {
         "type": "string",
         "enum": [
@@ -2297,6 +3074,24 @@
         ],
         "title": "SkillCategory",
         "description": "Taxonomy categories. Related-skill credit (tier 3) only flows within one category,\nso categories are deliberately narrower than \"tool\" or \"framework\" alone."
+      },
+      "SkillCountsOut": {
+        "properties": {
+          "required_matched": {
+            "type": "integer",
+            "title": "Required Matched"
+          },
+          "required_total": {
+            "type": "integer",
+            "title": "Required Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "required_matched",
+          "required_total"
+        ],
+        "title": "SkillCountsOut"
       },
       "SkillOut": {
         "properties": {

@@ -1,7 +1,7 @@
 """Bodies for scoring, rankings, candidate detail and weights (design doc §8)."""
 
 import uuid
-from typing import Any, Literal, Self
+from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -66,6 +66,121 @@ class RankingsOut(BaseModel):
     rows: list[RankingRow]
 
 
+# --- The stored analysis (match_results JSONB), typed for the candidate page ---------------
+
+RequirementTypeOut = Literal["required", "preferred"]
+
+
+class MatchedSkillOut(BaseModel):
+    skill: str
+    requirement_type: RequirementTypeOut
+    weight: float
+    tier: Literal["exact", "alias", "related", "contextual"]
+    credit: float = Field(description="0–1 before any years shortfall")
+    matched_skill: str | None = Field(description="The resume skill a related match came from")
+    similarity: float | None
+    evidence: str | None
+    min_years: float | None
+    years_used: float | None
+
+
+class MissingSkillOut(BaseModel):
+    skill: str
+    requirement_type: RequirementTypeOut
+    weight: float
+
+
+class RequirementMatchOut(BaseModel):
+    requirement_id: int
+    text: str
+    requirement_type: RequirementTypeOut
+    similarity: float
+    status: Literal["covered", "partial", "not_covered"]
+    evidence: str | None = Field(description="The resume sentence closest to the requirement")
+    evidence_section: str | None
+
+
+class BreakdownOut(BaseModel):
+    component: Literal["skills", "semantic", "experience", "education"]
+    label: str
+    active: bool = Field(description="False when there was nothing to score it on")
+    score: float | None
+    weight: float
+    available: float = Field(description="Points this component can give")
+    earned: float
+    lost: float
+
+
+class EvidenceItemOut(BaseModel):
+    type: str
+    impact: float = Field(description="Points: positive earned, negative lost")
+    message: str
+    snippet: str | None
+    section: str | None
+
+
+class RoleOut(BaseModel):
+    title: str | None
+    company: str | None
+    start: str | None
+    end: str | None = Field(description="None while the role is current")
+    months: int | None
+    similarity: float | None = Field(description="Role title and duties against the JD")
+    factor: float = Field(description="How much of the role counts as relevant: 1, 0.5 or 0")
+    counted: bool
+
+
+class ExperienceDetailsOut(BaseModel):
+    relevant_months: float
+    total_months: int | None
+    min_years: float | None
+    max_years: float | None
+    above_max: bool
+    roles: list[RoleOut]
+
+
+class EducationDetailsOut(BaseModel):
+    required_level: int | None
+    candidate_level: int | None
+    level_score: float | None = Field(description="None when the JD names no degree")
+    required_fields: list[str]
+    field_result: Literal["not_required", "match", "different", "unknown"]
+    candidate_field: str | None
+    matched_field: str | None
+    weight_factor: float
+    waived_by_experience: bool
+
+
+class SkillCountsOut(BaseModel):
+    required_matched: int
+    required_total: int
+
+
+class DetailsOut(BaseModel):
+    skills: SkillCountsOut
+    experience: ExperienceDetailsOut
+    education: EducationDetailsOut
+
+
+class ExplanationOut(BaseModel):
+    verdict: str
+    score: float = Field(description="The breakdown's earned points summed; equals the match %")
+    summary: str
+    breakdown: list[BreakdownOut]
+    strengths: list[EvidenceItemOut]
+    gaps: list[EvidenceItemOut]
+    notes: list[str]
+    details: DetailsOut
+
+
+class EducationOut(BaseModel):
+    degree: str | None = Field(description="As written on the resume")
+    degree_level: int | None = Field(description="0 none … 5 doctorate")
+    field_of_study: str | None
+    institution: str | None
+    graduation_year: int | None
+
+
 class CandidateOut(BaseModel):
     """Everything the candidate page shows, read from what scoring stored."""
 
@@ -88,15 +203,16 @@ class CandidateOut(BaseModel):
     total_years: float | None
     relevant_years: float | None
     parse_confidence: float | None
+    needs_review: bool = Field(description="Parse confidence below 0.5: check the resume by hand")
+    educations: list[EducationOut]
+    raw_text: str | None = Field(description="The text extracted from the file")
     # The analysis
     component_scores: dict[str, float | None]
     required_skill_coverage: float | None
-    matched_skills: list[dict[str, Any]]
-    missing_skills: list[dict[str, Any]]
-    requirement_matches: list[dict[str, Any]]
-    explanation: dict[str, Any] = Field(
-        description="verdict, summary, breakdown, strengths, gaps, notes, details"
-    )
+    matched_skills: list[MatchedSkillOut]
+    missing_skills: list[MissingSkillOut]
+    requirement_matches: list[RequirementMatchOut]
+    explanation: ExplanationOut
 
 
 class WeightsOut(BaseModel):

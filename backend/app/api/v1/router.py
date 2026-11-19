@@ -2,11 +2,12 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import batches, health, jobs, rankings, skills
+from app.api.v1 import batches, health, jobs, rankings, resumes, skills
 
 api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(jobs.router)
 api_router.include_router(batches.router)
 api_router.include_router(rankings.router)
+api_router.include_router(resumes.router)
 api_router.include_router(skills.router)

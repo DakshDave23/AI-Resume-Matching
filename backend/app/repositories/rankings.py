@@ -8,7 +8,7 @@ from typing import Any, Literal
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.models import Candidate, MatchResult, Resume
+from app.models import Candidate, Education, MatchResult, Resume
 
 RankingSort = Literal["score", "name", "relevant_experience", "total_experience"]
 
@@ -119,3 +119,14 @@ def candidate_match(
         .where(MatchResult.job_id == job_id, MatchResult.resume_id == resume_id)
     ).one_or_none()
     return (row[0], row[1], row[2]) if row else None
+
+
+def resume_educations(session: Session, resume_id: uuid.UUID) -> list[Education]:
+    """The resume's education entries, most recent first."""
+    return list(
+        session.scalars(
+            select(Education)
+            .where(Education.resume_id == resume_id)
+            .order_by(Education.graduation_year.desc().nulls_last(), Education.id)
+        )
+    )
