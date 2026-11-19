@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
-import { ApiError } from "@/api/client";
+import { ErrorState, ListSkeleton } from "@/components/common/States";
 import { BatchStatusList } from "@/components/upload/BatchStatusList";
 import { FileDropzone } from "@/components/upload/FileDropzone";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export function UploadPage() {
   const batchId = params.get("batch");
   const { data: job } = useJob(jobId);
   const upload = useUploadResumes(jobId);
-  const { data: batch, error: batchError } = useBatch(batchId);
+  const { data: batch, error: batchError, refetch } = useBatch(batchId);
 
   const [chosen, setChosen] = useState<File[]>([]);
   const [rejected, setRejected] = useState<Rejection[]>([]);
@@ -110,18 +110,13 @@ export function UploadPage() {
               </div>
             </section>
           )}
-          {upload.isError && (
-            <p role="alert" className="text-sm text-destructive">
-              {upload.error instanceof ApiError ? upload.error.message : "The upload failed."}
-            </p>
-          )}
         </>
       ) : batchError ? (
-        <p role="alert" className="text-sm text-destructive">
-          {batchError instanceof ApiError
-            ? batchError.message
-            : "The upload's progress couldn't be loaded."}
-        </p>
+        <ErrorState
+          error={batchError}
+          fallback="The upload's progress couldn't be loaded."
+          onRetry={() => refetch()}
+        />
       ) : batch ? (
         <>
           <BatchStatusList batch={batch} />
@@ -145,7 +140,7 @@ export function UploadPage() {
           </div>
         </>
       ) : (
-        <div className="h-48 animate-pulse rounded-lg bg-muted" aria-label="Loading progress" />
+        <ListSkeleton rows={6} label="Loading progress" />
       )}
     </div>
   );

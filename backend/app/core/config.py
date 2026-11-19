@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     max_file_size_mb: int = Field(default=5, gt=0, le=5)
     max_batch_files: int = Field(default=50, gt=0, le=200)
 
+    # --- Demo ------------------------------------------------------------
+    # "Load sample data" creates this JD's job and uploads every file in resumes/.
+    sample_data_dir: Path = REPO_ROOT / "sample_data"
+    sample_jd: str = "jds/backend_java_developer.txt"
+
     # --- Parsing / NLP ---------------------------------------------------
     phone_default_region: str = Field(default="IN", min_length=2, max_length=2)
     # Any 384-dimensional sentence-transformers model, e.g. BAAI/bge-small-en-v1.5. After

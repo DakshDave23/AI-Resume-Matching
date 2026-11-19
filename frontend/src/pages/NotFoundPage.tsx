@@ -1,14 +1,21 @@
+import { SearchX } from "lucide-react";
 import { Link } from "react-router-dom";
+
+import { EmptyState } from "@/components/common/States";
+import { Button } from "@/components/ui/button";
 
 export function NotFoundPage() {
   return (
-    <section>
-      <h1 className="text-2xl font-semibold">Page not found</h1>
-      <p className="mt-2 text-muted-foreground">
-        <Link to="/" className="underline">
-          Back to jobs
-        </Link>
-      </p>
-    </section>
+    <EmptyState
+      icon={SearchX}
+      title="Page not found"
+      action={
+        <Button asChild>
+          <Link to="/">Back to jobs</Link>
+        </Button>
+      }
+    >
+      There's nothing at this address.
+    </EmptyState>
   );
 }

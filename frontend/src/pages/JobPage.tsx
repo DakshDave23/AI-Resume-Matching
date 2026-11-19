@@ -1,22 +1,33 @@
 import { useParams } from "react-router-dom";
 
-import { ApiError } from "@/api/client";
+import { ErrorState } from "@/components/common/States";
 import { RequirementsEditor } from "@/components/job/RequirementsEditor";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useJob, useUpdateRequirements } from "@/hooks/useJobs";
 
 /** Wizard step 1, review: what the parser extracted from the JD, editable before scoring. */
 export function JobPage() {
   const { jobId = "" } = useParams();
-  const { data: job, error, isPending } = useJob(jobId);
+  const { data: job, error, isPending, refetch } = useJob(jobId);
   const save = useUpdateRequirements(jobId);
 
   if (isPending) {
-    return <div className="h-48 animate-pulse rounded-lg bg-muted" aria-label="Loading job" />;
+    return (
+      <div role="status" aria-label="Loading job" className="space-y-6">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-8 w-2/3" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-40" />
+          <Skeleton className="h-40" />
+        </div>
+      </div>
+    );
   }
-  if (error || !job) {
-    const message = error instanceof ApiError ? error.message : "The job couldn't be loaded.";
-    return <p className="text-destructive">{message}</p>;
+  if (error) {
+    return (
+      <ErrorState error={error} fallback="The job couldn't be loaded." onRetry={() => refetch()} />
+    );
   }
   return (
     <div className="space-y-8">

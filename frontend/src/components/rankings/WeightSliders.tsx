@@ -13,7 +13,6 @@ export function WeightSliders({
   dirty,
   saving,
   educationHalved,
-  error,
 }: {
   weights: Weights;
   onChange: (weights: Weights) => void;
@@ -22,7 +21,6 @@ export function WeightSliders({
   dirty: boolean;
   saving: boolean;
   educationHalved: boolean;
-  error: string | null;
 }) {
   const share = shares(weights);
   const allZero = COMPONENTS.every((c) => weights[c] === 0);
@@ -73,11 +71,6 @@ export function WeightSliders({
               : "These are the saved weights."}
         </span>
       </div>
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
     </section>
   );
 }

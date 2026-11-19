@@ -60,8 +60,31 @@ def upload_resumes(
         Upload(f.filename or "resume", f.file.read(limit + 1))
         for f in files[: settings.max_batch_files + 1]
     ]
+    return start_batch(
+        job_id, uploads, background, db=db, store=store, encoder=encoder,
+        sessions=sessions, settings=settings,
+    )  # fmt: skip
+
+
+def start_batch(
+    job_id: uuid.UUID,
+    uploads: list[Upload],
+    background: BackgroundTasks,
+    *,
+    db: Session,
+    store: FileStore,
+    encoder: TextEncoder,
+    sessions: SessionFactory,
+    settings: Settings,
+) -> BatchCreatedOut:
+    """Check and store the files, then parse them in the background (also used for samples)."""
     result = accept_batch(
-        db, store, job_id, uploads, max_file_bytes=limit, max_files=settings.max_batch_files
+        db,
+        store,
+        job_id,
+        uploads,
+        max_file_bytes=settings.max_file_size_bytes,
+        max_files=settings.max_batch_files,
     )
     pipeline = Pipeline(sessions, store, encoder, region=settings.phone_default_region)
     background.add_task(pipeline.run_batch, result.batch.id, [r.id for r in result.resumes])

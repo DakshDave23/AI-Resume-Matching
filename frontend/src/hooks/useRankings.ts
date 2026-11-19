@@ -7,6 +7,7 @@ import {
   saveWeights,
   type RankingFilters,
 } from "@/api/rankings";
+import { POLL_MS } from "@/hooks/useBatches";
 import { jobKey } from "@/hooks/useJobs";
 import type { Weights } from "@/lib/weights";
 
@@ -18,6 +19,9 @@ export function useRankings(jobId: string, filters: RankingFilters = {}) {
     queryKey: [...rankingsKey(jobId), rankingParams(filters).toString()], // empty filters share a key
     queryFn: () => getRankings(jobId, filters),
     placeholderData: keepPreviousData,
+    // While resumes are still parsing, new candidates keep arriving: poll like the upload page.
+    refetchInterval: (query) =>
+      query.state.data?.not_ranked.some((r) => r.parse_status !== "failed") ? POLL_MS : false,
   });
 }
 

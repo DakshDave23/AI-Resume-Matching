@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { Link, Outlet } from "react-router-dom";
 
+import { ListSkeleton } from "@/components/common/States";
 import { HealthIndicator } from "@/components/layout/HealthIndicator";
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +27,9 @@ export function AppLayout() {
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <Outlet />
+        <Suspense fallback={<ListSkeleton rows={4} label="Loading page" />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

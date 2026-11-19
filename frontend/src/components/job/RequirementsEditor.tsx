@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { ApiError } from "@/api/client";
 import type { Job } from "@/api/jobs";
 import { RequirementChips } from "@/components/job/RequirementChips";
 import { Button } from "@/components/ui/button";
@@ -155,10 +154,7 @@ export function RequirementsEditor({
           {problem ? (
             <span className="text-destructive">{problem}</span>
           ) : save.isError ? (
-            <span className="text-destructive">
-              Not saved:{" "}
-              {save.error instanceof ApiError ? save.error.message : "something went wrong"}
-            </span>
+            <span className="text-destructive">Not saved.</span>
           ) : dirty ? (
             <span className="text-muted-foreground">Unsaved changes</span>
           ) : save.isSuccess ? (

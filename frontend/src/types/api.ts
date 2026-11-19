@@ -255,6 +255,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sample-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create the sample Backend Java job and upload the 15 sample resumes
+         * @description Synthetic data only. Returns the new job and batch at once; the resumes are parsed and scored in the background, exactly as an upload is. One of them is a scanned PDF that fails with its reason.
+         */
+        post: operations["load_sample_data_api_v1_sample_data_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -911,6 +931,11 @@ export interface components {
             total: number;
             /** Rows */
             rows: components["schemas"]["RankingRow"][];
+            /**
+             * Not Ranked
+             * @description The job's resumes still being parsed or that failed; filters don't apply
+             */
+            not_ranked: components["schemas"]["UnrankedOut"][];
         };
         /** RejectedFileOut */
         RejectedFileOut: {
@@ -1062,6 +1087,26 @@ export interface components {
             requirement_type: components["schemas"]["RequirementType"];
             /** Min Years */
             min_years?: number | null;
+        };
+        /** UnrankedOut */
+        UnrankedOut: {
+            /**
+             * Resume Id
+             * Format: uuid
+             */
+            resume_id: string;
+            /** Filename */
+            filename: string;
+            /**
+             * Parse Status
+             * @enum {string}
+             */
+            parse_status: "queued" | "parsing" | "failed";
+            /**
+             * Parse Error
+             * @description Why the file couldn't be read
+             */
+            parse_error: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -1758,6 +1803,40 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    load_sample_data_api_v1_sample_data_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchCreatedOut"];
+                };
+            };
+            /** @description The server has no sample data */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The embedding model is still loading */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

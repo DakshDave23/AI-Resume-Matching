@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 
-import { ApiError } from "@/api/client";
 import { JdInput } from "@/components/job/JdInput";
 import { useCreateJob } from "@/hooks/useJobs";
 
@@ -25,13 +24,6 @@ export function NewJobPage() {
           create.mutate(input, { onSuccess: (job) => navigate(`/jobs/${job.id}`) })
         }
       />
-      {create.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          {create.error instanceof ApiError
-            ? create.error.message
-            : "The job description couldn't be read."}
-        </p>
-      )}
     </div>
   );
 }

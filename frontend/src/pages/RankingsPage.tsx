@@ -1,15 +1,17 @@
-import { Download, SlidersHorizontal } from "lucide-react";
+import { Download, FileSearch, SlidersHorizontal, Upload } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { ApiError } from "@/api/client";
 import { exportUrl, type RankingFilters } from "@/api/rankings";
+import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
+import { NotRanked } from "@/components/rankings/NotRanked";
 import { RankingTable, type TableRow } from "@/components/rankings/RankingTable";
 import { SummaryCards } from "@/components/rankings/SummaryCards";
 import { WeightSliders } from "@/components/rankings/WeightSliders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useJob } from "@/hooks/useJobs";
 import { useRankings, useRescore, useSaveWeights } from "@/hooks/useRankings";
@@ -27,10 +29,6 @@ import {
 const MIN_SCORES = [0, 50, 65, 80];
 const SELECT =
   "h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
-
-function errorText(error: unknown): string {
-  return error instanceof ApiError ? error.message : "The ranking couldn't be loaded.";
-}
 
 /**
  * Wizard step 3: summary cards over the ranked table, with search, filters and weight sliders.
@@ -110,13 +108,26 @@ export function RankingsPage() {
       </header>
 
       {everyone.error ? (
-        <p role="alert" className="text-sm text-destructive">
-          {errorText(everyone.error)}
-        </p>
+        <ErrorState
+          error={everyone.error}
+          fallback="The ranking couldn't be loaded."
+          onRetry={() => everyone.refetch()}
+        />
       ) : everyone.isPending ? (
-        <div className="h-24 animate-pulse rounded-lg bg-muted" aria-label="Loading summary" />
+        <div
+          role="status"
+          aria-label="Loading summary"
+          className="grid grid-cols-2 gap-3 lg:grid-cols-4"
+        >
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
       ) : (
-        <SummaryCards summary={summarize(all)} />
+        <>
+          <SummaryCards summary={summarize(all)} />
+          <NotRanked resumes={everyone.data.not_ranked} />
+        </>
       )}
 
       {showWeights && (
@@ -129,7 +140,6 @@ export function RankingsPage() {
             dirty={previewing}
             saving={save.isPending}
             educationHalved={educationFactor < 1}
-            error={save.isError ? errorText(save.error) : null}
           />
           {previewing && (
             <p className="mt-2 text-sm text-muted-foreground">
@@ -148,11 +158,6 @@ export function RankingsPage() {
           <Button size="sm" onClick={() => rescore.mutate()} disabled={rescore.isPending}>
             {rescore.isPending ? "Re-scoring…" : "Re-score now"}
           </Button>
-          {rescore.isError && (
-            <p role="alert" className="w-full text-destructive">
-              {errorText(rescore.error)}
-            </p>
-          )}
         </div>
       )}
 
@@ -212,23 +217,36 @@ export function RankingsPage() {
         </Button>
       </section>
 
-      {shown.error ? (
-        <p role="alert" className="text-sm text-destructive">
-          {errorText(shown.error)}
-        </p>
-      ) : shown.isPending ? (
-        <div className="h-64 animate-pulse rounded-lg bg-muted" aria-label="Loading ranking" />
+      {everyone.error ? null : shown.error ? (
+        <ErrorState
+          error={shown.error}
+          fallback="The ranking couldn't be loaded."
+          onRetry={() => shown.refetch()}
+        />
+      ) : shown.isPending || everyone.isPending ? (
+        <ListSkeleton rows={6} label="Loading ranking" />
       ) : all.length === 0 ? (
-        <p className="rounded-lg border p-8 text-center text-muted-foreground">
-          No resumes are ranked for this job yet.{" "}
-          <Link to={`/jobs/${jobId}/upload`} className="font-medium text-foreground underline">
-            Upload resumes
-          </Link>
-        </p>
+        <EmptyState
+          icon={Upload}
+          title="No ranked resumes yet"
+          action={
+            <Button asChild>
+              <Link to={`/jobs/${jobId}/upload`}>Upload resumes</Link>
+            </Button>
+          }
+        >
+          Upload resumes for this job. Each one is scored as soon as it's parsed.
+        </EmptyState>
       ) : rows.length === 0 ? (
-        <p className="rounded-lg border p-8 text-center text-muted-foreground">
-          No candidates match these filters.
-        </p>
+        <EmptyState
+          icon={FileSearch}
+          title="No candidates match these filters"
+          action={
+            <Button variant="outline" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          }
+        />
       ) : (
         <section aria-label="Ranked candidates" className="space-y-2">
           <p className="text-sm text-muted-foreground" aria-live="polite">

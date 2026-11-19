@@ -60,10 +60,20 @@ class RankingRow(BaseModel):
     needs_review: bool = Field(description="Parse confidence below 0.5: check the resume by hand")
 
 
+class UnrankedOut(BaseModel):
+    resume_id: uuid.UUID
+    filename: str
+    parse_status: Literal["queued", "parsing", "failed"]
+    parse_error: str | None = Field(description="Why the file couldn't be read")
+
+
 class RankingsOut(BaseModel):
     job_id: uuid.UUID
     total: int
     rows: list[RankingRow]
+    not_ranked: list[UnrankedOut] = Field(
+        description="The job's resumes still being parsed or that failed; filters don't apply"
+    )
 
 
 # --- The stored analysis (match_results JSONB), typed for the candidate page ---------------

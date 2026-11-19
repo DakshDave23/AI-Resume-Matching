@@ -24,6 +24,7 @@ from app.schemas.rankings import (
     RankingSort,
     RankingsOut,
     RequirementMatchOut,
+    UnrankedOut,
     Weights,
     WeightsOut,
 )
@@ -152,6 +153,15 @@ def get_rankings(
                 needs_review=_needs_review(r.parse_confidence),
             )
             for r in rows
+        ],
+        not_ranked=[
+            UnrankedOut(
+                resume_id=r.id,
+                filename=r.original_filename,
+                parse_status=r.parse_status,
+                parse_error=r.parse_error,
+            )
+            for r in ranking_repo.unranked_resumes(db, job_id)
         ],
     )
 

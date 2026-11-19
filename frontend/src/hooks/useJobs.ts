@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createJob,
   getJob,
+  listJobs,
+  loadSampleData,
   searchSkills,
   updateRequirements,
   uploadJob,
@@ -41,5 +43,18 @@ export function useSkillSearch(query: string) {
     queryFn: () => searchSkills(q),
     enabled: q.length > 0,
     staleTime: 60_000,
+  });
+}
+
+export function useJobList() {
+  // Counts and top scores change with every upload: always refetch when the page opens.
+  return useQuery({ queryKey: ["jobs"], queryFn: () => listJobs(), staleTime: 0 });
+}
+
+export function useLoadSampleData() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: loadSampleData,
+    onSuccess: () => client.invalidateQueries({ queryKey: ["jobs"] }),
   });
 }

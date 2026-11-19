@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { resumeFileUrl } from "@/api/candidates";
-import { ApiError } from "@/api/client";
 import { EducationPanel } from "@/components/candidate/EducationPanel";
+import { ErrorState } from "@/components/common/States";
 import { ExperienceComparison } from "@/components/candidate/ExperienceComparison";
 import { ExplanationList } from "@/components/candidate/ExplanationList";
 import { RequirementMatchTable } from "@/components/candidate/RequirementMatchTable";
@@ -14,6 +14,7 @@ import { ScoreGauge } from "@/components/candidate/ScoreGauge";
 import { SkillsPanel } from "@/components/candidate/SkillsPanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCandidate } from "@/hooks/useCandidate";
 import { useJob } from "@/hooks/useJobs";
@@ -25,7 +26,7 @@ import { displayName } from "@/lib/rankings";
 export function CandidatePage() {
   const { jobId = "", resumeId = "" } = useParams();
   const { data: job } = useJob(jobId);
-  const { data: candidate, error, isPending } = useCandidate(jobId, resumeId);
+  const { data: candidate, error, isPending, refetch } = useCandidate(jobId, resumeId);
   const { data: ranking } = useRankings(jobId);
   const around = neighbours(ranking?.rows ?? [], resumeId);
   const rankingsPath = `/jobs/${jobId}/rankings`;
@@ -85,11 +86,29 @@ export function CandidatePage() {
       </div>
 
       {error ? (
-        <p role="alert" className="text-sm text-destructive">
-          {error instanceof ApiError ? error.message : "This candidate couldn't be loaded."}
-        </p>
+        <ErrorState
+          error={error}
+          fallback="This candidate couldn't be loaded."
+          onRetry={() => refetch()}
+        />
       ) : isPending ? (
-        <div className="h-64 animate-pulse rounded-lg bg-muted" aria-label="Loading candidate" />
+        <div role="status" aria-label="Loading candidate" className="space-y-6">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-96 max-w-full" />
+          </div>
+          <div className="flex gap-6 rounded-lg border p-5">
+            <Skeleton className="size-36 shrink-0 rounded-full" />
+            <div className="flex-1 space-y-4">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-6" />
+              ))}
+            </div>
+          </div>
+          <Skeleton className="h-9 w-96 max-w-full" />
+          <Skeleton className="h-48" />
+        </div>
       ) : (
         <>
           <header className="space-y-2">

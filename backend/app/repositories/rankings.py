@@ -8,7 +8,8 @@ from typing import Any, Literal
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.models import Candidate, Education, MatchResult, Resume
+from app.models import Candidate, Education, MatchResult, Resume, UploadBatch
+from app.models.enums import ParseStatus
 
 RankingSort = Literal["score", "name", "relevant_experience", "total_experience"]
 
@@ -128,5 +129,17 @@ def resume_educations(session: Session, resume_id: uuid.UUID) -> list[Education]
             select(Education)
             .where(Education.resume_id == resume_id)
             .order_by(Education.graduation_year.desc().nulls_last(), Education.id)
+        )
+    )
+
+
+def unranked_resumes(session: Session, job_id: uuid.UUID) -> list[Resume]:
+    """The job's resumes not in the ranking: still being parsed, or failed (with a reason)."""
+    return list(
+        session.scalars(
+            select(Resume)
+            .join(UploadBatch, UploadBatch.id == Resume.batch_id)
+            .where(UploadBatch.job_id == job_id, Resume.parse_status != ParseStatus.PARSED)
+            .order_by(Resume.created_at, Resume.original_filename)
         )
     )

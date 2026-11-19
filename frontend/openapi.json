@@ -908,6 +908,34 @@
           }
         }
       }
+    },
+    "/api/v1/sample-data": {
+      "post": {
+        "tags": [
+          "samples"
+        ],
+        "summary": "Create the sample Backend Java job and upload the 15 sample resumes",
+        "description": "Synthetic data only. Returns the new job and batch at once; the resumes are parsed and scored in the background, exactly as an upload is. One of them is a scanned PDF that fails with its reason.",
+        "operationId": "load_sample_data_api_v1_sample_data_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchCreatedOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The server has no sample data"
+          },
+          "503": {
+            "description": "The embedding model is still loading"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2731,13 +2759,22 @@
             },
             "type": "array",
             "title": "Rows"
+          },
+          "not_ranked": {
+            "items": {
+              "$ref": "#/components/schemas/UnrankedOut"
+            },
+            "type": "array",
+            "title": "Not Ranked",
+            "description": "The job's resumes still being parsed or that failed; filters don't apply"
           }
         },
         "type": "object",
         "required": [
           "job_id",
           "total",
-          "rows"
+          "rows",
+          "not_ranked"
         ],
         "title": "RankingsOut"
       },
@@ -3183,6 +3220,48 @@
         ],
         "title": "SkillRequirementIn",
         "description": "One skill chip: an existing skill (by id or name/alias) or a new custom one."
+      },
+      "UnrankedOut": {
+        "properties": {
+          "resume_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Resume Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "parse_status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "parsing",
+              "failed"
+            ],
+            "title": "Parse Status"
+          },
+          "parse_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Error",
+            "description": "Why the file couldn't be read"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resume_id",
+          "filename",
+          "parse_status",
+          "parse_error"
+        ],
+        "title": "UnrankedOut"
       },
       "ValidationError": {
         "properties": {
