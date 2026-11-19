@@ -221,6 +221,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search skills by name or alias */
+        get: operations["get_skills_api_v1_skills_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -748,6 +765,17 @@ export interface components {
          * @enum {string}
          */
         SkillCategory: "language" | "framework" | "library" | "database" | "messaging" | "cloud" | "devops" | "tool" | "data" | "ml" | "testing" | "concept" | "methodology" | "soft" | "business";
+        /** SkillOut */
+        SkillOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Is Custom */
+            is_custom: boolean;
+        };
         /**
          * SkillRequirementIn
          * @description One skill chip: an existing skill (by id or name/alias) or a new custom one.
@@ -1380,6 +1408,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_skills_api_v1_skills_get: {
+        parameters: {
+            query: {
+                /** @description Name or alias */
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillOut"][];
+                };
             };
             /** @description Validation Error */
             422: {

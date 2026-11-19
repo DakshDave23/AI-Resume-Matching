@@ -172,3 +172,38 @@ def add_custom_skill(
     if skill is None:  # pragma: no cover - the row was just inserted or already there
         raise RuntimeError(f"custom skill {name!r} was not saved")
     return skill
+
+
+def search_skills(session: Session, query: str, *, limit: int) -> list[Skill]:
+    """Skills for the chip editor's autocomplete, best matches first.
+
+    Order: the exact name or alias, then names starting with the text, then aliases
+    starting with it ("k8s" finds Kubernetes), then names containing it.
+    """
+    key = normalize_term(query)
+    pattern = _escape_like(key)
+    name = func.lower(Skill.canonical_name)
+    alias_starts = (
+        select(literal_column("1"))
+        .select_from(func.unnest(Skill.aliases).alias("alias"))
+        .where(literal_column("alias").like(f"{pattern}%", escape="\\"))
+        .exists()
+    )
+    rank = case(
+        (or_(name == key, Skill.aliases.contains([key])), 0),
+        (name.like(f"{pattern}%", escape="\\"), 1),
+        (alias_starts, 2),
+        else_=3,
+    )
+    return list(
+        session.scalars(
+            select(Skill)
+            .where(or_(name.like(f"%{pattern}%", escape="\\"), alias_starts))
+            .order_by(rank, func.length(Skill.canonical_name), name)
+            .limit(limit)
+        )
+    )
+
+
+def _escape_like(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")

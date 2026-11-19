@@ -398,6 +398,7 @@ REST under `/api/v1`. Swagger UI at http://localhost:8000/docs lists every route
 | GET | `/jobs/{job_id}/rankings/export` | The same rows as CSV (cells that would run as spreadsheet formulas are escaped) |
 | GET | `/jobs/{job_id}/candidates/{resume_id}` | The full stored analysis: contact, component scores, matched and missing skills, requirement matches, explanation |
 | PATCH | `/jobs/{job_id}/weights` | Save the four weights (each ≥ 0, not all 0) and recompute every total |
+| GET | `/skills?q=` | Autocomplete for the requirement chips: exact name or alias first, then names and aliases starting with the text (`k8s` finds Kubernetes) |
 
 **Resume uploads.** Each file is checked on arrival: size, real type (magic bytes, not the extension) and duplicates within the upload. A bad file is listed under `rejected` with a reason, and the rest go ahead. Accepted files are stored as `<uuid>.<ext>` under `UPLOAD_DIR`; the recruiter's file name is kept for display only. A background task then parses each one (extract → parse → chunk → embed → save) in its own transaction, so a failure marks only that file `failed`, with a reason such as "Looks like a scanned image; OCR is not enabled." The 15 samples finish in about 2 seconds on a laptop CPU. If the server stops mid-batch (a crash, or `--reload`), it finishes the remaining files when it starts again.
 

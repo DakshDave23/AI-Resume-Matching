@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CandidatePage } from "@/pages/CandidatePage";
+import { JobPage } from "@/pages/JobPage";
 import { JobsPage } from "@/pages/JobsPage";
 import { NewJobPage } from "@/pages/NewJobPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -15,6 +16,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <JobsPage /> },
       { path: "/jobs/new", element: <NewJobPage /> },
+      { path: "/jobs/:jobId", element: <JobPage /> },
       { path: "/jobs/:jobId/upload", element: <UploadPage /> },
       { path: "/jobs/:jobId/rankings", element: <RankingsPage /> },
       { path: "/jobs/:jobId/candidates/:resumeId", element: <CandidatePage /> },
