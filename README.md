@@ -12,28 +12,23 @@ Each resume gets a 0–100 match score built from four explainable components: *
 
 ## Contents
 
-1. [Demo](#demo)
-2. [Features](#features)
-3. [Quick start](#quick-start)
-4. [A tour of the app](#a-tour-of-the-app)
-5. [Architecture](#architecture)
-6. [Tech stack](#tech-stack)
-7. [Local development](#local-development)
-8. [Sample data](#sample-data)
-9. [How parsing works](#how-parsing-works)
-10. [How matching works](#how-matching-works)
-11. [Database](#database)
-12. [API](#api)
-13. [Results](#results)
-14. [Project structure](#project-structure)
-15. [Running tests](#running-tests)
-16. [Limitations and future work](#limitations-and-future-work)
-17. [Data and ethics](#data-and-ethics)
-18. [License](#license)
-
-## Demo
-
-_TODO: screenshots and demo video link._
+1. [Features](#features)
+2. [Quick start](#quick-start)
+3. [A tour of the app](#a-tour-of-the-app)
+4. [Architecture](#architecture)
+5. [Tech stack](#tech-stack)
+6. [Local development](#local-development)
+7. [Sample data](#sample-data)
+8. [How parsing works](#how-parsing-works)
+9. [How matching works](#how-matching-works)
+10. [Database](#database)
+11. [API](#api)
+12. [Results](#results)
+13. [Project structure](#project-structure)
+14. [Running tests](#running-tests)
+15. [Limitations and future work](#limitations-and-future-work)
+16. [Data and ethics](#data-and-ethics)
+17. [License](#license)
 
 ## Features
 
